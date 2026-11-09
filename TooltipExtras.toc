@@ -1,8 +1,8 @@
 ## Interface: 16001
 ## Title: TooltipExtras
-## Notes: Extra lines on item tooltips. First up: essence swap prices (3 lesser = 1 greater) from Auctionator.
+## Notes: Extra lines on item tooltips. First up: essence combine/split profit (3 lesser = 1 greater) from Auctionator.
 ## Author: Dranged
-## Version: 0.1.1
+## Version: 0.1.2
 ## X-DrangedAddons-Games: _forever_
 ## OptionalDeps: Auctionator
 ## SavedVariables: TooltipExtrasDB
