@@ -1,6 +1,7 @@
 -- Essence swap: enchanting essences convert 3 lesser <-> 1 greater (right-click either one).
--- On either essence the tooltip shows both prices from Auctionator, what 3 lessers cost
--- against 1 greater, and whether combining or splitting makes money.
+-- On either essence the tooltip shows both prices from Auctionator, highlights whether 3 lessers
+-- or 1 greater sells for more, and says what converting the ones you own gains. An AH flip line
+-- (buy, convert, resell) appears only when that is profitable too.
 local ADDON, ns = ...
 
 local CALLER = "TooltipExtras"
@@ -50,11 +51,11 @@ end
 ns.AddModule({
   key = "essences",
   label = "Essence swap prices",
-  tip = "On lesser and greater enchanting essences: both prices, 3 lessers against 1 greater, "
-    .. "and whether combining (3 into 1) or splitting (1 into 3) makes money. Prices come from Auctionator.",
+  tip = "On lesser and greater enchanting essences: 3 lessers against 1 greater, the better one highlighted, "
+    .. "and whether to combine (3 into 1) or split (1 into 3) before selling. Prices come from Auctionator.",
   options = {
     { key = "ahCut", label = "Take off the 5% auction house cut", default = true,
-      tip = "The profit line counts the 5% the auction house keeps when you sell the result." },
+      tip = "The profit lines count the 5% the auction house keeps when you sell." },
   },
   OnItem = function(tooltip, id, db)
     local e = byItem[id]
@@ -63,41 +64,65 @@ ns.AddModule({
     local greaterName = Name(e.greater, "Greater " .. e.short .. " Essence")
     local lp, gp = Price(e.lesser), Price(e.greater)
 
+    -- Which form sells for more: 3 lessers or 1 greater. nil until both prices are known.
+    local better -- "lesser" | "greater" | "same"
+    if lp and gp then
+      if gp > lp * 3 then better = "greater"
+      elseif gp < lp * 3 then better = "lesser"
+      else better = "same" end
+    end
+
     tooltip:AddLine(" ")
     tooltip:AddLine("Essence swap (3 lesser = 1 greater)", 1, 0.82, 0)
-    local function Row(label, price, ageID)
-      if price then
-        tooltip:AddDoubleLine(label, ns.Money(price) .. (ageID and Age(ageID) or ""), 1, 1, 1, 1, 1, 1)
-      else
+    -- The side that sells for more goes green with a "<< better" tag, the other grey.
+    -- Both stay white when the prices are equal.
+    local function Row(label, price, ageID, side)
+      if not price then
         tooltip:AddDoubleLine(label, "no price", 1, 1, 1, 0.5, 0.5, 0.5)
+        return
+      end
+      local value = ns.Money(price) .. (ageID and Age(ageID) or "")
+      if side and better == side then
+        tooltip:AddDoubleLine(label .. "  |cff33ff99<< better|r", value, 0.2, 1, 0.6, 0.2, 1, 0.6)
+      elseif side and better and better ~= "same" then
+        tooltip:AddDoubleLine(label, value, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6)
+      else
+        tooltip:AddDoubleLine(label, value, 1, 1, 1, 1, 1, 1)
       end
     end
-    -- the hovered essence first
-    if e.isGreater then
-      Row(greaterName, gp, e.greater)
-      Row(lesserName .. " (each)", lp, e.lesser)
-      Row("3 x " .. lesserName, lp and lp * 3)
-    else
-      Row(lesserName .. " (each)", lp, e.lesser)
-      Row("3 x " .. lesserName, lp and lp * 3)
-      Row(greaterName, gp, e.greater)
-    end
-    if not (lp and gp) then return true end
+    -- Just the two sides being compared. Auctionator already shows single-item prices.
+    Row("3 x " .. lesserName, lp and lp * 3, e.lesser, "lesser")
+    Row(greaterName, gp, e.greater, "greater")
+    if not better then return true end
 
-    -- buy the cheaper side, convert, sell the other side
+    -- Verdict for essences you already own: the AH cut comes off whichever form you sell,
+    -- so the gain is the price gap times what you keep.
     local keep = db.ahCut and (1 - AH_CUT) or 1
-    local combine = gp * keep - lp * 3 -- buy 3 lesser, sell 1 greater
-    local split = lp * 3 * keep - gp   -- buy 1 greater, sell 3 lesser
-    local label, profit
-    if combine >= split then
-      label, profit = "Combine 3 into 1", combine
+    local cutNote = db.ahCut and " |cff808080(after AH cut)|r" or ""
+    if better == "same" then
+      tooltip:AddLine("Same price either way", 1, 1, 1)
     else
-      label, profit = "Split 1 into 3", split
+      local gain = math.abs(gp - lp * 3) * keep
+      local action
+      if better == "greater" then
+        action = "Combine 3 into 1, sell the greater"
+      else
+        action = "Split 1 into 3, sell the lessers"
+      end
+      tooltip:AddDoubleLine(action .. cutNote, "+" .. ns.Money(gain), 0.2, 1, 0.6, 0.2, 1, 0.6)
     end
-    local r, g, b = 0.2, 1, 0.6
-    if profit < 0 then r, g, b = 1, 0.33, 0.33 end
-    tooltip:AddDoubleLine(label .. (db.ahCut and " |cff808080(after AH cut)|r" or ""),
-      (profit >= 0 and "+" or "") .. ns.Money(profit), 1, 1, 1, r, g, b)
+
+    -- AH flip: buy the cheap side off the AH, convert, sell the other side. You pay full
+    -- price going in and lose the cut coming out, so only show it when it still makes money.
+    local flip, flipLabel
+    if better == "greater" then
+      flip, flipLabel = gp * keep - lp * 3, "Flip: buy 3 lesser, sell 1 greater"
+    elseif better == "lesser" then
+      flip, flipLabel = lp * 3 * keep - gp, "Flip: buy 1 greater, sell 3 lesser"
+    end
+    if flip and flip >= 1 then
+      tooltip:AddDoubleLine(flipLabel .. cutNote, "+" .. ns.Money(flip), 1, 1, 1, 0.2, 1, 0.6)
+    end
     return true
   end,
 })
