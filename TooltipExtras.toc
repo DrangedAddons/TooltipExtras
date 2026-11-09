@@ -1,0 +1,14 @@
+## Interface: 16001
+## Title: TooltipExtras
+## Notes: Extra lines on item tooltips. First up: essence swap prices (3 lesser = 1 greater) from Auctionator.
+## Author: Dranged
+## Version: 0.1.0
+## X-DrangedAddons-Games: _forever_
+## OptionalDeps: Auctionator
+## SavedVariables: TooltipExtrasDB
+## IconTexture: Interface\AddOns\TooltipExtras\icon
+## AddonCompartmentFunc: TooltipExtras_OnCompartmentClick
+
+Core.lua
+Essences.lua
+Options.lua
