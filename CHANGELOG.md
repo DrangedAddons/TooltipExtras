@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.0
+- **Mining:** ores and bars now show **Smelt to Bar** (on the ore) or **Smelt from Ore** (on the bar), with the profit or loss per bar from smelting instead of selling the ore. Covers Copper, Tin, Silver, Iron, Gold, Mithril, Truesilver, Dark Iron (8 ore per bar), Thorium, Azerothium (2 ore + Coal per bar) and Heavy Thorium. Coal counts at its auction price.
+- The settings page now has a **Professions** list. Tick the ones you want tooltip lines for (Enchanting, Mining). Both start ticked.
+- The 5% auction house cut box moved to the top of the page and applies to every profession. Your old setting carries over.
+
 ## 0.1.2
 - Essence swap is down to one line. A lesser essence shows **Combine to Greater** and a greater shows **Split to Lesser**, each with the profit or loss (green or red). No more price rows, verdict line or flip line.
 - The profit takes off the 5% AH cut when that option is on. If the other essence's price is out of date, the line says how old it is.

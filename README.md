@@ -1,13 +1,12 @@
 # TooltipExtras
 
-A World of Warcraft addon for WoW Forever that adds extra lines to item tooltips. Each feature can be turned on or off on its own.
+A World of Warcraft addon for WoW Forever that adds profit lines to item tooltips, one profession at a time. Tick the professions you want on the settings page. Prices come from Auctionator, so you need it installed.
 
-## Features
-- **Essence swap prices:** on any lesser or greater enchanting essence (Magic, Astral, Mystic, Nether, Eternal, Planar, Cosmic, Celestial), the tooltip shows:
-  - the price of one lesser, three lessers and one greater, from Auctionator;
-  - whether combining (3 lesser into 1 greater) or splitting (1 greater into 3 lesser) makes money, in green, or loses it, in red.
+## Professions
+- **Enchanting:** on a lesser essence (Magic, Astral, Mystic, Nether, Eternal, Planar, Cosmic, Celestial), **Combine to Greater** with the profit or loss from turning 3 into 1. On a greater, **Split to Lesser** with the profit or loss from turning 1 into 3.
+- **Mining:** on an ore or its bar, **Smelt to Bar** / **Smelt from Ore** with the profit or loss per bar from smelting instead of selling the ore. Covers Copper, Tin, Silver, Iron, Gold, Mithril, Truesilver, Dark Iron (8 ore), Thorium, Azerothium (2 ore + Coal) and Heavy Thorium. Extra reagents like Coal count at their auction price.
 
-  The profit takes off the 5% auction house cut by default (you can turn that off). A price not seen today is marked with its age, e.g. "(3d old)". Needs Auctionator for prices.
+Profit is green, loss is red. It takes off the 5% auction house cut by default (you can turn that off). When the other item's price wasn't seen today, the line shows its age, e.g. "(3d old)".
 
 ## Using it
 `/tte` (or `/tooltipextras`), the addon list button or Options > AddOns > TooltipExtras opens the settings. Settings are account-wide.

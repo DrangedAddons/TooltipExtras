@@ -1,6 +1,7 @@
--- TooltipExtras: extra lines on item tooltips. Each feature is a module:
---   ns.AddModule{ key, label, tip, options = { {key, label, tip, default}... }, OnItem(tooltip, itemID) }
--- Core keeps the settings, hooks the item tooltip once and hands every item to each enabled module.
+-- TooltipExtras: extra lines on item tooltips. Each feature is a module, one per profession:
+--   ns.AddModule{ key, label = profession name, tip, options = { {key, label, tip, default}... },
+--     OnItem(tooltip, itemID, db) }
+-- Core keeps the settings, hooks the item tooltip once and hands every item to each ticked module.
 local ADDON, ns = ...
 
 ns.modules = {}
@@ -25,6 +26,23 @@ local function ModuleDB(m)
 end
 ns.ModuleDB = ModuleDB
 
+-- Settings shared by every module: TooltipExtrasDB.general. Account-wide.
+function ns.GeneralDB()
+  TooltipExtrasDB = TooltipExtrasDB or {}
+  local g = TooltipExtrasDB.general
+  if type(g) ~= "table" then
+    g = {}
+    TooltipExtrasDB.general = g
+  end
+  if g.ahCut == nil then
+    -- 0.1.x kept this on the essences module
+    local ess = TooltipExtrasDB.essences
+    g.ahCut = not (type(ess) == "table" and ess.ahCut == false)
+    if type(ess) == "table" then ess.ahCut = nil end
+  end
+  return g
+end
+
 ----------------------------------------------------------------------------------------------
 -- Shared helpers
 
@@ -48,6 +66,50 @@ function ns.ItemName(id)
   local name = (C_Item and C_Item.GetItemNameByID and C_Item.GetItemNameByID(id))
     or (GetItemInfo and GetItemInfo(id))
   return name
+end
+
+-- Auctionator prices, callerID "TooltipExtras". nil when Auctionator is missing or has no price.
+local CALLER = "TooltipExtras"
+local function API()
+  return Auctionator and Auctionator.API and Auctionator.API.v1
+end
+
+function ns.Price(id)
+  local api = API()
+  if not api or not api.GetAuctionPriceByItemID then return nil end
+  local ok, price = pcall(api.GetAuctionPriceByItemID, CALLER, id)
+  return ok and price or nil
+end
+
+-- " (3d old)" for the first of the given items whose price wasn't seen today, else "".
+-- Auctionator gives up counting past 21 days.
+function ns.Age(...)
+  local api = API()
+  if not api or not api.GetAuctionAgeByItemID then return "" end
+  for i = 1, select("#", ...) do
+    local ok, days = pcall(api.GetAuctionAgeByItemID, CALLER, (select(i, ...)))
+    if ok then
+      if days == nil then return " |cff808080(old)|r" end
+      if days >= 1 then return string.format(" |cff808080(%dd old)|r", days) end
+    end
+  end
+  return ""
+end
+
+-- Share of a sale you keep: 0.95 with the AH cut option on, else 1.
+function ns.Keep()
+  return ns.GeneralDB().ahCut and 0.95 or 1
+end
+
+-- One "Label   +1g 2s 3c" line, green for profit, red for loss. Label in tooltip gold.
+function ns.ProfitLine(tooltip, label, profit)
+  if not profit then
+    tooltip:AddDoubleLine(label, "no price", 1, 0.82, 0, 0.5, 0.5, 0.5)
+    return
+  end
+  local r, g, b = 0.2, 1, 0.6
+  if profit < 0 then r, g, b = 1, 0.33, 0.33 end
+  tooltip:AddDoubleLine(label, (profit >= 0 and "+" or "") .. ns.Money(profit), 1, 0.82, 0, r, g, b)
 end
 
 ----------------------------------------------------------------------------------------------
@@ -89,6 +151,7 @@ local loader = CreateFrame("Frame")
 loader:RegisterEvent("PLAYER_LOGIN")
 loader:SetScript("OnEvent", function()
   for _, m in ipairs(ns.modules) do ModuleDB(m) end
+  ns.GeneralDB()
   if TooltipDataProcessor and TooltipDataProcessor.AddTooltipPostCall and Enum and Enum.TooltipDataType then
     TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Item, OnItem)
   else
