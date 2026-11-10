@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.4.1
+- **Leatherworking:** hides now show **Cure Hide** with the profit or loss from curing instead of selling the hide. The salt counts at its auction price. Covers Light and Medium Hide (Salt), Heavy Hide (3 Salt), Thick Hide (Deeprock Salt) and Rugged Hide (Refined Deeprock Salt, makes 2 Cured Rugged Hides, so the profit is per craft).
+
 ## 0.4.0
 - **Leatherworking:** leather now shows **Upgrade to <next leather>** with the profit or loss per upgraded leather, against selling what you have. Covers Ruined Leather Scraps to Light (3 per), Light to Medium (4), Medium to Heavy (5), Heavy to Thick (6) and Thick to Rugged (6). Rugged Leather gets no line. It has its own tick box under Professions and starts ticked.
 

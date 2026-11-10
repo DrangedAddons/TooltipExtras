@@ -4,8 +4,9 @@
 --
 --   ns.AddConverter{ key, label, tip,
 --     toLabel = "Smelt to Bar", input = "ore", output = "bar",
---     recipes = { { inputID, inputsPerOutput, outputID, { {extraID, count}, ... } }, ... } }
+--     recipes = { { inputID, inputsPerCraft, outputID, { {extraID, count}, ... }, makes }, ... } }
 --
+-- makes (default 1) is how many outputs one craft gives; profit is then per craft.
 -- toLabel, input and output can also be function(recipe) -> string, for text that changes per
 -- recipe (Leatherworking names the next leather).
 -- Extra reagents (Coal) are bought for the craft, so they count at full auction price.
@@ -16,21 +17,23 @@ local function Text(v, r)
   return v
 end
 
--- " (5 cloth per bolt)" / " (2 ore + Coal per bar)"; "" for a plain 1:1.
+-- " (5 cloth per bolt)" / " (2 ore + Coal per bar)" / " (1 hide + Salt per 2 cured hides)";
+-- "" for a plain 1:1.
 local function RecipeNote(c, r)
-  if r.count == 1 and #r.extras == 0 then return "" end
+  if r.count == 1 and #r.extras == 0 and r.makes == 1 then return "" end
   local parts = { r.count .. " " .. Text(c.input, r) }
   for _, x in ipairs(r.extras) do
     local name = ns.ItemName(x[1]) or (c.names and c.names[x[1]]) or "?"
     parts[#parts + 1] = (x[2] > 1 and (x[2] .. " ") or "") .. name
   end
-  return " |cff808080(" .. table.concat(parts, " + ") .. " per " .. Text(c.output, r) .. ")|r"
+  return " |cff808080(" .. table.concat(parts, " + ") .. " per " .. (r.makes > 1 and (r.makes .. " ") or "") .. Text(c.output, r) .. ")|r"
 end
 
 function ns.AddConverter(c)
   local byInput = {} -- input itemID -> recipe
   for _, row in ipairs(c.recipes) do
-    byInput[row[1]] = { input = row[1], count = row[2], output = row[3], extras = row[4] or {} }
+    byInput[row[1]] = { input = row[1], count = row[2], output = row[3], extras = row[4] or {},
+      makes = row[5] or 1 }
   end
 
   ns.AddModule({
@@ -44,7 +47,7 @@ function ns.AddConverter(c)
       -- You sell either the inputs or the output, so the AH cut hits both.
       local profit
       if ip and op then
-        profit = (op - ip * r.count) * ns.Keep()
+        profit = (op * r.makes - ip * r.count) * ns.Keep()
         for _, x in ipairs(r.extras) do
           local xp = ns.Price(x[1])
           if not xp then profit = nil break end
