@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.4.0
+- **Leatherworking:** leather now shows **Upgrade to <next leather>** with the profit or loss per upgraded leather, against selling what you have. Covers Ruined Leather Scraps to Light (3 per), Light to Medium (4), Medium to Heavy (5), Heavy to Thick (6) and Thick to Rugged (6). Rugged Leather gets no line. It has its own tick box under Professions and starts ticked.
+
 ## 0.3.1
 - Mining and Tailoring lines now show only on ore and cloth. Bars and bolts can't be turned back, so they no longer get a line.
 

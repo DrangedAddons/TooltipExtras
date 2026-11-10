@@ -6,18 +6,25 @@
 --     toLabel = "Smelt to Bar", input = "ore", output = "bar",
 --     recipes = { { inputID, inputsPerOutput, outputID, { {extraID, count}, ... } }, ... } }
 --
+-- toLabel, input and output can also be function(recipe) -> string, for text that changes per
+-- recipe (Leatherworking names the next leather).
 -- Extra reagents (Coal) are bought for the craft, so they count at full auction price.
 local ADDON, ns = ...
+
+local function Text(v, r)
+  if type(v) == "function" then return v(r) end
+  return v
+end
 
 -- " (5 cloth per bolt)" / " (2 ore + Coal per bar)"; "" for a plain 1:1.
 local function RecipeNote(c, r)
   if r.count == 1 and #r.extras == 0 then return "" end
-  local parts = { r.count .. " " .. c.input }
+  local parts = { r.count .. " " .. Text(c.input, r) }
   for _, x in ipairs(r.extras) do
     local name = ns.ItemName(x[1]) or (c.names and c.names[x[1]]) or "?"
     parts[#parts + 1] = (x[2] > 1 and (x[2] .. " ") or "") .. name
   end
-  return " |cff808080(" .. table.concat(parts, " + ") .. " per " .. c.output .. ")|r"
+  return " |cff808080(" .. table.concat(parts, " + ") .. " per " .. Text(c.output, r) .. ")|r"
 end
 
 function ns.AddConverter(c)
@@ -51,7 +58,7 @@ function ns.AddConverter(c)
         for _, x in ipairs(r.extras) do others[#others + 1] = x[1] end
         age = ns.Age(unpack(others))
       end
-      local label = c.toLabel .. RecipeNote(c, r) .. age
+      local label = Text(c.toLabel, r) .. RecipeNote(c, r) .. age
       tooltip:AddLine(" ")
       ns.ProfitLine(tooltip, label, profit)
       return true
