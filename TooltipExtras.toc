@@ -1,8 +1,8 @@
 ## Interface: 16001
 ## Title: TooltipExtras
-## Notes: Profit lines on item tooltips, per profession: essence combine/split (Enchanting), ore to bar (Mining). Prices from Auctionator.
+## Notes: Profit lines on item tooltips, per profession: essence combine/split (Enchanting), ore to bar (Mining), cloth to bolt (Tailoring). Prices from Auctionator.
 ## Author: Dranged
-## Version: 0.2.0
+## Version: 0.3.0
 ## X-DrangedAddons-Games: _forever_
 ## OptionalDeps: Auctionator
 ## SavedVariables: TooltipExtrasDB
@@ -10,6 +10,8 @@
 ## AddonCompartmentFunc: TooltipExtras_OnCompartmentClick
 
 Core.lua
+Convert.lua
 Essences.lua
 Mining.lua
+Tailoring.lua
 Options.lua

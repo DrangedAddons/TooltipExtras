@@ -5,6 +5,7 @@ A World of Warcraft addon for WoW Forever that adds profit lines to item tooltip
 ## Professions
 - **Enchanting:** on a lesser essence (Magic, Astral, Mystic, Nether, Eternal, Planar, Cosmic, Celestial), **Combine to Greater** with the profit or loss from turning 3 into 1. On a greater, **Split to Lesser** with the profit or loss from turning 1 into 3.
 - **Mining:** on an ore or its bar, **Smelt to Bar** / **Smelt from Ore** with the profit or loss per bar from smelting instead of selling the ore. Covers Copper, Tin, Silver, Iron, Gold, Mithril, Truesilver, Dark Iron (8 ore), Thorium, Azerothium (2 ore + Coal) and Heavy Thorium. Extra reagents like Coal count at their auction price.
+- **Tailoring:** on cloth or its bolt, **Weave to Bolt** / **Weave from Cloth** with the profit or loss per bolt from weaving instead of selling the cloth. Covers Linen, Wool, Silk, Mageweave and Runecloth.
 
 Profit is green, loss is red. It takes off the 5% auction house cut by default (you can turn that off). When the other item's price wasn't seen today, the line shows its age, e.g. "(3d old)".
 
