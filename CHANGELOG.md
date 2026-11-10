@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.3.1
+- Mining and Tailoring lines now show only on ore and cloth. Bars and bolts can't be turned back, so they no longer get a line.
+
 ## 0.3.0
 - **Tailoring:** cloth and bolts now show **Weave to Bolt** (on the cloth) or **Weave from Cloth** (on the bolt), with the profit or loss per bolt from weaving instead of selling the cloth. Covers Linen (2 per bolt), Wool (3), Silk (4), Mageweave (5) and Runecloth (5). It has its own tick box under Professions and starts ticked.
 

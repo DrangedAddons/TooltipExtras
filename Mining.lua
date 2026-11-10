@@ -6,10 +6,9 @@ local COAL = 3857
 ns.AddConverter({
   key = "mining",
   label = "Mining",
-  tip = "Ore and bars. Whether smelting the ore into bars sells for more than the ore itself, "
+  tip = "On ore: whether smelting the ore into bars sells for more than the ore itself, "
     .. "as profit or loss per bar. Extra reagents like Coal count at their auction price.",
   toLabel = "Smelt to Bar",
-  fromLabel = "Smelt from Ore",
   input = "ore",
   output = "bar",
   names = { [COAL] = "Coal" }, -- until the item name loads

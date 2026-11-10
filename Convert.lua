@@ -1,9 +1,9 @@
 -- Shared "is it worth converting?" module for one-way crafts like ore -> bar or cloth -> bolt.
--- One tooltip line on the input and on the output: profit or loss per output from converting
--- what you already have instead of selling it. Prices come from Auctionator.
+-- One tooltip line on the input only (the output can't be turned back): profit or loss per
+-- output from converting what you already have instead of selling it. Prices from Auctionator.
 --
 --   ns.AddConverter{ key, label, tip,
---     toLabel = "Smelt to Bar", fromLabel = "Smelt from Ore", input = "ore", output = "bar",
+--     toLabel = "Smelt to Bar", input = "ore", output = "bar",
 --     recipes = { { inputID, inputsPerOutput, outputID, { {extraID, count}, ... } }, ... } }
 --
 -- Extra reagents (Coal) are bought for the craft, so they count at full auction price.
@@ -21,11 +21,9 @@ local function RecipeNote(c, r)
 end
 
 function ns.AddConverter(c)
-  local byItem = {} -- itemID -> { recipe, isOutput }
+  local byInput = {} -- input itemID -> recipe
   for _, row in ipairs(c.recipes) do
-    local r = { input = row[1], count = row[2], output = row[3], extras = row[4] or {} }
-    byItem[r.input] = { recipe = r, isOutput = false }
-    byItem[r.output] = { recipe = r, isOutput = true }
+    byInput[row[1]] = { input = row[1], count = row[2], output = row[3], extras = row[4] or {} }
   end
 
   ns.AddModule({
@@ -33,9 +31,8 @@ function ns.AddConverter(c)
     label = c.label,
     tip = c.tip,
     OnItem = function(tooltip, id)
-      local e = byItem[id]
-      if not e then return false end
-      local r = e.recipe
+      local r = byInput[id]
+      if not r then return false end
       local ip, op = ns.Price(r.input), ns.Price(r.output)
       -- You sell either the inputs or the output, so the AH cut hits both.
       local profit
@@ -50,11 +47,11 @@ function ns.AddConverter(c)
       local age = ""
       if profit then
         -- Auctionator already shows the hovered item's age; flag the others.
-        local others = { e.isOutput and r.input or r.output }
+        local others = { r.output }
         for _, x in ipairs(r.extras) do others[#others + 1] = x[1] end
         age = ns.Age(unpack(others))
       end
-      local label = (e.isOutput and c.fromLabel or c.toLabel) .. RecipeNote(c, r) .. age
+      local label = c.toLabel .. RecipeNote(c, r) .. age
       tooltip:AddLine(" ")
       ns.ProfitLine(tooltip, label, profit)
       return true

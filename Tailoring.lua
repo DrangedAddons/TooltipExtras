@@ -4,10 +4,9 @@ local ADDON, ns = ...
 ns.AddConverter({
   key = "tailoring",
   label = "Tailoring",
-  tip = "Cloth and bolts. Whether weaving the cloth into bolts sells for more than the cloth itself, "
+  tip = "On cloth: whether weaving the cloth into bolts sells for more than the cloth itself, "
     .. "as profit or loss per bolt.",
   toLabel = "Weave to Bolt",
-  fromLabel = "Weave from Cloth",
   input = "cloth",
   output = "bolt",
   -- cloth, cloth per bolt, bolt
