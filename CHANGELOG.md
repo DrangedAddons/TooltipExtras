@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.5.3
+- Darkmoon Faire: the cost column lines up. Silver and copper always show two digits (`05`), and when any row in a block costs gold, every row in it shows gold too (`0`).
+
 ## 0.5.2
 - Darkmoon Faire: each quest now shows what it costs to complete next to the tickets it gives, in place of the cost per ticket. The order is still best value per ticket first. The other NPCs' lines say `<< better value` (was `<< cheaper`), since a better deal can still cost more in total.
 
