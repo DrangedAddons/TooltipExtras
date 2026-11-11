@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.6.0
+- Darkmoon Faire: a **per ticket** column next to **cost**, with its own aligned coin columns. Both blocks share them, so they line up top to bottom. The order is still best value per ticket first.
+
 ## 0.5.5
 - Darkmoon Faire: costs only show the coins they need. Copper-only costs show just copper, silver costs show silver and copper, and the leading coin isn't zero-padded. The coins still sit in their columns.
 

@@ -181,42 +181,46 @@ ns.AddModule({
       return pa ~= nil
     end)
 
-    -- One gold slot width for the whole tooltip so both blocks' coins line up; 0 when no row
-    -- costs a gold.
-    local goldDigits = 0
-    local function Measure(cost)
-      if cost and cost >= 10000 then
-        goldDigits = math.max(goldDigits, #tostring(math.floor(cost / 10000)))
+    -- Two money columns, per ticket then cost. One gold slot width per column for the whole
+    -- tooltip so both blocks line up; 0 when no row in that column reaches a gold.
+    local goldDigits = { 0, 0 }
+    local function Measure(r)
+      if not r then return end
+      for c, v in ipairs({ r.perTicket, r.cost }) do
+        if v and v >= 10000 then
+          goldDigits[c] = math.max(goldDigits[c], #tostring(math.floor(v / 10000)))
+        end
       end
     end
-    for _, r in ipairs(rows) do Measure(r.cost) end
-    for _, o in ipairs(others) do Measure(o.row and o.row.cost) end
+    for _, r in ipairs(rows) do Measure(r) end
+    for _, o in ipairs(others) do Measure(o.row) end
+    local LABELS = { "per ticket", "cost" }
 
     tooltip:AddLine(" ")
-    tooltip:AddDoubleLine("Darkmoon quests, best value first", "cost", 1, 0.82, 0, 1, 0.82, 0)
+    ns.MoneyHeader(tooltip, "Darkmoon quests, best value first", LABELS, goldDigits, 1, 0.82, 0)
     for i, r in ipairs(rows) do
       if not r.perTicket then
         tooltip:AddDoubleLine(r.text, "no price", 0.6, 0.6, 0.6, 0.5, 0.5, 0.5)
       elseif i == 1 then
-        ns.MoneyLine(tooltip, r.text .. "  |cff33ff99<< best|r", r.cost, goldDigits,
+        ns.MoneyLine(tooltip, r.text .. "  |cff33ff99<< best|r", { r.perTicket, r.cost }, goldDigits,
           0.2, 1, 0.6, 0.2, 1, 0.6)
       else
-        ns.MoneyLine(tooltip, r.text, r.cost, goldDigits, 1, 1, 1, 1, 1, 1)
+        ns.MoneyLine(tooltip, r.text, { r.perTicket, r.cost }, goldDigits, 1, 1, 1, 1, 1, 1)
       end
     end
 
     tooltip:AddLine(" ")
-    tooltip:AddDoubleLine("Best at the other NPCs", "cost", 1, 0.82, 0, 1, 0.82, 0)
+    ns.MoneyHeader(tooltip, "Best at the other NPCs", LABELS, goldDigits, 1, 0.82, 0)
     for _, o in ipairs(others) do
       local p = o.row and o.row.perTicket
       local text = o.name .. ": " .. (o.row and o.row.text or "?")
       if not p then
         tooltip:AddDoubleLine(text, "no price", 0.6, 0.6, 0.6, 0.5, 0.5, 0.5)
       elseif not mine or p < mine then
-        ns.MoneyLine(tooltip, text .. "  |cff33ff99<< better value|r", o.row.cost, goldDigits,
+        ns.MoneyLine(tooltip, text .. "  |cff33ff99<< better value|r", { o.row.perTicket, o.row.cost }, goldDigits,
           0.2, 1, 0.6, 0.2, 1, 0.6)
       else
-        ns.MoneyLine(tooltip, text, o.row.cost, goldDigits, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8)
+        ns.MoneyLine(tooltip, text, { o.row.perTicket, o.row.cost }, goldDigits, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8)
       end
     end
     return true
