@@ -1,6 +1,7 @@
 -- TooltipExtras: extra lines on item tooltips. Each feature is a module, one per profession:
 --   ns.AddModule{ key, label = profession name, tip, options = { {key, label, tip, default}... },
---     OnItem(tooltip, itemID, db) }
+--     OnItem(tooltip, itemID, db), OnUnit(tooltip, npcID, db) }
+-- OnItem / OnUnit are both optional; each returns true when it added lines.
 -- Core keeps the settings, hooks the item tooltip once and hands every item to each ticked module.
 local ADDON, ns = ...
 
@@ -81,6 +82,20 @@ function ns.Price(id)
   return ok and price or nil
 end
 
+-- What it costs to buy one: the cheaper of the auction price and the vendor price Auctionator
+-- saw at a merchant (thread, dye, flux). nil when neither is known.
+function ns.BuyPrice(id)
+  local ah = ns.Price(id)
+  local api = API()
+  local vendor
+  if api and api.GetVendorPriceByItemID then
+    local ok, p = pcall(api.GetVendorPriceByItemID, CALLER, id)
+    if ok and type(p) == "number" and p > 0 then vendor = p end
+  end
+  if ah and vendor then return math.min(ah, vendor) end
+  return ah or vendor
+end
+
 -- " (3d old)" for the first of the given items whose price wasn't seen today, else "".
 -- Auctionator gives up counting past 21 days.
 function ns.Age(...)
@@ -124,19 +139,13 @@ local function ItemIDOf(tooltip, data)
   end
 end
 
-local function OnItem(tooltip, data)
-  if not tooltip or (tooltip.IsForbidden and tooltip:IsForbidden()) then return end
-  if tooltip ~= GameTooltip and tooltip ~= ItemRefTooltip and tooltip ~= ShoppingTooltip1
-    and tooltip ~= ShoppingTooltip2 then
-    return
-  end
-  local id = ItemIDOf(tooltip, data)
-  if not id then return end
+-- Hands id to every ticked module that has handler `which` ("OnItem" / "OnUnit").
+local function RunModules(tooltip, which, id)
   local added = false
   for _, m in ipairs(ns.modules) do
     local db = ModuleDB(m)
-    if db.enabled then
-      local ok, err = pcall(m.OnItem, tooltip, id, db)
+    if db.enabled and m[which] then
+      local ok, err = pcall(m[which], tooltip, id, db)
       if ok and err then added = true end
       if not ok and not m.failed then
         m.failed = true
@@ -147,6 +156,35 @@ local function OnItem(tooltip, data)
   if added then tooltip:Show() end -- resize to fit the new lines
 end
 
+local function OnItem(tooltip, data)
+  if not tooltip or (tooltip.IsForbidden and tooltip:IsForbidden()) then return end
+  if tooltip ~= GameTooltip and tooltip ~= ItemRefTooltip and tooltip ~= ShoppingTooltip1
+    and tooltip ~= ShoppingTooltip2 then
+    return
+  end
+  local id = ItemIDOf(tooltip, data)
+  if id then RunModules(tooltip, "OnItem", id) end
+end
+
+-- NPC ID from a creature GUID ("Creature-0-xxx-xxx-xxx-14829-xxx"); nil for players and pets.
+local function NpcIDOf(tooltip, data)
+  local guid = data and data.guid
+  if not guid and tooltip.GetUnit then
+    local _, unit = tooltip:GetUnit()
+    guid = unit and UnitGUID(unit)
+  end
+  if type(guid) ~= "string" then return nil end
+  local kind, _, _, _, _, npc = strsplit("-", guid)
+  if kind ~= "Creature" then return nil end
+  return tonumber(npc)
+end
+
+local function OnUnit(tooltip, data)
+  if tooltip ~= GameTooltip or (tooltip.IsForbidden and tooltip:IsForbidden()) then return end
+  local ok, id = pcall(NpcIDOf, tooltip, data)
+  if ok and id then RunModules(tooltip, "OnUnit", id) end
+end
+
 local loader = CreateFrame("Frame")
 loader:RegisterEvent("PLAYER_LOGIN")
 loader:SetScript("OnEvent", function()
@@ -154,10 +192,12 @@ loader:SetScript("OnEvent", function()
   ns.GeneralDB()
   if TooltipDataProcessor and TooltipDataProcessor.AddTooltipPostCall and Enum and Enum.TooltipDataType then
     TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Item, OnItem)
+    TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Unit, OnUnit)
   else
     for _, tip in ipairs({ GameTooltip, ItemRefTooltip }) do
       tip:HookScript("OnTooltipSetItem", function(self) OnItem(self) end)
     end
+    GameTooltip:HookScript("OnTooltipSetUnit", function(self) OnUnit(self) end)
   end
 end)
 

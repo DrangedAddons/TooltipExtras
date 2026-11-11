@@ -1,0 +1,171 @@
+-- Darkmoon Faire: hover a ticket turn-in NPC to see its hand-ins ranked by what a ticket costs.
+-- Each hand-in costs the AH price of the items, or, when this character knows the recipe and
+-- crafting is cheaper, the cost of the materials (AH or vendor price). Craftable rows are tagged.
+-- Cheapest is green with "<< best". Buying, so no AH cut.
+-- Hand-ins are classic's (Forever matches): count of item -> tickets.
+local ADDON, ns = ...
+
+-- Recipes for the craftable hand-ins (Forever's, from CraftRoute's data).
+-- itemID -> { spell = recipe spell ID, makes = items per craft, { {reagentID, count}, ... } }
+local RECIPES = {
+  [3240] = { spell = 3116, { 2836, 1 } },                                     -- Coarse Weightstone
+  [3486] = { spell = 3337, { 2838, 3 } },                                     -- Heavy Grinding Stone
+  [3835] = { spell = 3501, { 3575, 6 }, { 2605, 1 } },                        -- Green Iron Bracers
+  [7945] = { spell = 10001, { 3860, 16 }, { 7971, 1 }, { 1210, 4 }, { 7966, 1 }, { 4304, 2 } }, -- Big Black Mace
+  [12644] = { spell = 16639, { 12365, 4 } },                                  -- Dense Grinding Stone
+  [4363] = { spell = 3926, { 4359, 2 }, { 2840, 1 }, { 2589, 2 } },           -- Copper Modulator
+  [4375] = { spell = 3942, { 2841, 2 }, { 2592, 1 } },                        -- Whirring Bronze Gizmo
+  [9313] = { spell = 23068, makes = 3, { 4377, 1 }, { 4234, 1 } },            -- Green Firework
+  [11590] = { spell = 15255, { 3860, 1 }, { 4338, 1 }, { 10505, 1 } },        -- Mechanical Repair Kit
+  [15994] = { spell = 19791, { 12359, 3 }, { 14047, 1 } },                    -- Thorium Widget
+  [2309] = { spell = 2161, { 2318, 8 }, { 2320, 5 } },                        -- Embossed Leather Boots
+  [2314] = { spell = 2166, { 2319, 10 }, { 4231, 2 }, { 2321, 2 } },          -- Toughened Leather Armor
+  [5739] = { spell = 6661, { 4234, 14 }, { 2321, 2 }, { 7071, 1 } },          -- Barbaric Harness
+  [8185] = { spell = 10556, { 4304, 14 }, { 8167, 28 }, { 8343, 1 } },        -- Turtle Scale Leggings
+  [15564] = { spell = 19058, { 8170, 5 } },                                   -- Rugged Armor Kit
+}
+
+-- npcID -> { { itemID, count, tickets, name until the item name loads }, ... }
+local NPCS = {
+  [14829] = { -- Yebb Neblegear: beast parts
+    { 5134, 5, 1, "Small Furry Paw" },
+    { 11407, 5, 4, "Torn Bear Pelt" },
+    { 4582, 5, 8, "Soft Bushy Tail" },
+    { 5117, 5, 12, "Vibrant Plume" },
+    { 11404, 10, 20, "Evil Bat Eye" },
+    { 19933, 10, 20, "Glowing Scorpid Blood" },
+  },
+  [14832] = { -- Kerri Hicks: Blacksmithing
+    { 3240, 10, 1, "Coarse Weightstone" },
+    { 3486, 7, 4, "Heavy Grinding Stone" },
+    { 3835, 3, 8, "Green Iron Bracers" },
+    { 7945, 3, 12, "Big Black Mace" },
+    { 12644, 8, 20, "Dense Grinding Stone" },
+  },
+  [14841] = { -- Rinling: Engineering
+    { 4363, 3, 1, "Copper Modulator" },
+    { 4375, 7, 4, "Whirring Bronze Gizmo" },
+    { 9313, 36, 8, "Green Firework" },
+    { 11590, 6, 12, "Mechanical Repair Kit" },
+    { 15994, 6, 20, "Thorium Widget" },
+  },
+  [14833] = { -- Chronos: Leatherworking
+    { 2309, 3, 1, "Embossed Leather Boots" },
+    { 2314, 3, 4, "Toughened Leather Armor" },
+    { 5739, 3, 8, "Barbaric Harness" },
+    { 8185, 1, 12, "Turtle Scale Leggings" },
+    { 15564, 8, 20, "Rugged Armor Kit" },
+  },
+}
+
+----------------------------------------------------------------------------------------------
+-- Which of these recipes this character knows. Saved per character from the profession window,
+-- since recipes can't be asked about while it's closed.
+
+local spellToItem = {}
+for itemID, r in pairs(RECIPES) do spellToItem[r.spell] = itemID end
+
+local function Known()
+  TooltipExtrasCharDB = TooltipExtrasCharDB or {}
+  TooltipExtrasCharDB.knownRecipes = TooltipExtrasCharDB.knownRecipes or {}
+  return TooltipExtrasCharDB.knownRecipes
+end
+
+local function KnowsRecipe(spell)
+  if Known()[spell] then return true end
+  if IsPlayerSpell then
+    local ok, yes = pcall(IsPlayerSpell, spell)
+    if ok and yes then return true end
+  end
+  return false
+end
+
+local function ScanTradeSkill()
+  local known = Known()
+  if C_TradeSkillUI and C_TradeSkillUI.GetAllRecipeIDs and C_TradeSkillUI.GetRecipeInfo then
+    for _, recipeID in ipairs(C_TradeSkillUI.GetAllRecipeIDs() or {}) do
+      if spellToItem[recipeID] then
+        local ok, info = pcall(C_TradeSkillUI.GetRecipeInfo, recipeID)
+        if ok and info and info.learned ~= nil then known[recipeID] = info.learned or nil end
+      end
+    end
+  elseif GetNumTradeSkills and GetTradeSkillRecipeLink then
+    for i = 1, GetNumTradeSkills() do
+      local link = GetTradeSkillRecipeLink(i)
+      local spell = link and tonumber(link:match("enchant:(%d+)"))
+      if spell and spellToItem[spell] then known[spell] = true end
+    end
+  end
+end
+
+local scanner = CreateFrame("Frame")
+for _, ev in ipairs({ "TRADE_SKILL_SHOW", "TRADE_SKILL_LIST_UPDATE", "NEW_RECIPE_LEARNED" }) do
+  pcall(scanner.RegisterEvent, scanner, ev)
+end
+scanner:SetScript("OnEvent", function() pcall(ScanTradeSkill) end)
+
+-- Materials for one item, bought at the cheaper of AH and vendor. nil if any price is missing.
+local function CraftCost(r)
+  local total = 0
+  for _, rg in ipairs(r) do
+    local p = ns.BuyPrice(rg[1])
+    if not p then return nil end
+    total = total + p * rg[2]
+  end
+  return total / (r.makes or 1)
+end
+
+----------------------------------------------------------------------------------------------
+
+ns.AddModule({
+  key = "darkmoon",
+  label = "Darkmoon Faire",
+  tip = "Hover Yebb Neblegear, Kerri Hicks, Rinling or Chronos: their ticket hand-ins ranked by "
+    .. "cost per ticket. Hand-ins you can craft are tagged, and use the material cost when "
+    .. "crafting is cheaper than buying them made. The cheapest is marked best.",
+  OnUnit = function(tooltip, npcID)
+    local list = NPCS[npcID]
+    if not list then return false end
+
+    local rows = {}
+    for _, q in ipairs(list) do
+      local itemID, count, tickets = q[1], q[2], q[3]
+      local buy = ns.Price(itemID)
+      local recipe = RECIPES[itemID]
+      local craftable = recipe and KnowsRecipe(recipe.spell)
+      local craft = craftable and CraftCost(recipe)
+      local each, tag
+      if craft and (not buy or craft <= buy) then
+        each, tag = craft, "  |cff66ccff[craft]|r"
+      elseif craftable then
+        each, tag = buy, "  |cff66ccff[craftable, buying is cheaper]|r"
+      else
+        each, tag = buy, ""
+      end
+      rows[#rows + 1] = {
+        text = count .. " x " .. (ns.ItemName(itemID) or q[4]) .. " |cff808080(" .. tickets
+          .. (tickets == 1 and " ticket)|r" or " tickets)|r") .. tag,
+        perTicket = each and each * count / tickets,
+      }
+    end
+    -- cheapest per ticket first, unpriced last
+    table.sort(rows, function(a, b)
+      if a.perTicket and b.perTicket then return a.perTicket < b.perTicket end
+      return a.perTicket ~= nil
+    end)
+
+    tooltip:AddLine(" ")
+    tooltip:AddLine("Darkmoon tickets, cost per ticket", 1, 0.82, 0)
+    for i, r in ipairs(rows) do
+      if not r.perTicket then
+        tooltip:AddDoubleLine(r.text, "no price", 0.6, 0.6, 0.6, 0.5, 0.5, 0.5)
+      elseif i == 1 then
+        tooltip:AddDoubleLine(r.text .. "  |cff33ff99<< best|r", ns.Money(r.perTicket),
+          0.2, 1, 0.6, 0.2, 1, 0.6)
+      else
+        tooltip:AddDoubleLine(r.text, ns.Money(r.perTicket), 1, 1, 1, 1, 1, 1)
+      end
+    end
+    return true
+  end,
+})

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.0
+- **Darkmoon Faire:** hover a ticket turn-in NPC to see their hand-ins ranked by cost per ticket, buying the items off the AH. The cheapest is green and marked `<< best`. Items with no auction price go to the bottom.
+  - Yebb Neblegear: beast parts (Small Furry Paws up to Evil Bat Eyes and Glowing Scorpid Blood).
+  - Kerri Hicks: Blacksmithing (Coarse Weightstones up to Dense Grinding Stones).
+  - Rinling: Engineering (Copper Modulators up to Thorium Widgets).
+  - Chronos: Leatherworking (Embossed Leather Boots up to Rugged Armor Kits).
+- Hand-ins this character can craft are tagged `[craft]` and cost the materials instead, bought at the cheaper of AH and vendor price (vendor prices come from Auctionator's merchant scans). If the item made is cheaper on the AH than its materials, the row says `[craftable, buying is cheaper]` and uses the AH price. Known recipes are saved per character when you open the profession window, so open it once after updating.
+- The settings list is now **Professions and events**, with a Darkmoon Faire tick box (starts ticked).
+
 ## 0.4.1
 - **Leatherworking:** hides now show **Cure Hide** with the profit or loss from curing instead of selling the hide. The salt counts at its auction price. Covers Light and Medium Hide (Salt), Heavy Hide (3 Salt), Thick Hide (Deeprock Salt) and Rugged Hide (Refined Deeprock Salt, makes 2 Cured Rugged Hides, so the profit is per craft).
 

@@ -74,7 +74,7 @@ local function Build()
     function(v) ns.GeneralDB().ahCut = v end)
   y = y - 40
 
-  y = Heading(y, "Professions", "Tick the professions you want tooltip lines for.")
+  y = Heading(y, "Professions and events", "Tick the ones you want tooltip lines for.")
   local sorted = {}
   for _, m in ipairs(ns.modules) do sorted[#sorted + 1] = m end
   table.sort(sorted, function(a, b) return a.label < b.label end)
