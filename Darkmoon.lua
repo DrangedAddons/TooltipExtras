@@ -125,8 +125,8 @@ local NPC_NAMES = {
 }
 local NPC_ORDER = { 14829, 14832, 14841, 14833 }
 
--- One NPC's hand-ins as { text, cost = whole quest, perTicket }, cheapest per ticket first,
--- unpriced last. The tooltip shows the quest cost; per ticket only decides the order.
+-- One NPC's hand-ins as { text, items, tag, tickets, cost = whole quest, perTicket }, cheapest
+-- per ticket first, unpriced last.
 local function Rows(npcID)
   local rows = {}
   for _, q in ipairs(NPCS[npcID]) do
@@ -143,9 +143,12 @@ local function Rows(npcID)
     else
       each, tag = buy, ""
     end
+    local items = count .. " x " .. (ns.ItemName(itemID) or q[4])
     rows[#rows + 1] = {
-      text = count .. " x " .. (ns.ItemName(itemID) or q[4]) .. " |cff808080(" .. tickets
-        .. (tickets == 1 and " ticket)|r" or " tickets)|r") .. tag,
+      text = items .. " |cff808080(" .. tickets .. (tickets == 1 and " ticket)|r" or " tickets)|r") .. tag,
+      items = items,
+      tag = tag,
+      tickets = tickets,
       cost = each and each * count,
       perTicket = each and each * count / tickets,
     }
@@ -157,12 +160,105 @@ local function Rows(npcID)
   return rows
 end
 
+----------------------------------------------------------------------------------------------
+-- Ticket vendor (Gelvas Grimegate): on an item priced in tickets, what the tickets you're short
+-- would cost through the cheapest mix of quests at all four NPCs.
+
+local TICKET = 19182 -- Darkmoon Faire Prize Ticket
+
+-- The merchant item under the cursor, as its ticket price, or nil.
+local function MerchantTicketPrice(tooltip)
+  if not (MerchantFrame and MerchantFrame:IsShown()) or MerchantFrame.selectedTab == 2 then return nil end
+  local owner = tooltip.GetOwner and tooltip:GetOwner()
+  local name = owner and owner.GetName and owner:GetName()
+  if not (name and name:match("^MerchantItem%d+ItemButton$")) then return nil end
+  local index = owner:GetID()
+  if not (index and GetMerchantItemCostInfo and GetMerchantItemCostItem) then return nil end
+  local kinds = GetMerchantItemCostInfo(index)
+  for k = 1, kinds or 0 do
+    local _, value, link = GetMerchantItemCostItem(index, k)
+    local id = link and tonumber(link:match("item:(%d+)"))
+    if id == TICKET then return value end
+  end
+  return nil
+end
+
+-- Cheapest set of quests giving at least `need` tickets, as { { row, times }, ... } and the
+-- total cost. Unbounded knapsack over every priced quest; need is a few hundred at most.
+local function TicketPlan(need)
+  local quests = {}
+  for _, npc in ipairs(NPC_ORDER) do
+    for _, r in ipairs(Rows(npc)) do
+      if r.cost then
+        r.npc = NPC_NAMES[npc]
+        quests[#quests + 1] = r
+      end
+    end
+  end
+  if #quests == 0 then return nil end
+  local best, pick = { [0] = 0 }, {}
+  for t = 1, need do
+    for qi, q in ipairs(quests) do
+      local c = best[math.max(0, t - q.tickets)] + q.cost
+      if not best[t] or c < best[t] then best[t], pick[t] = c, qi end
+    end
+  end
+  local counts, order, t = {}, {}, need
+  while t > 0 do
+    local qi = pick[t]
+    if not counts[qi] then order[#order + 1] = qi end
+    counts[qi] = (counts[qi] or 0) + 1
+    t = math.max(0, t - quests[qi].tickets)
+  end
+  local plan = {}
+  for _, qi in ipairs(order) do plan[#plan + 1] = { row = quests[qi], times = counts[qi] } end
+  table.sort(plan, function(a, b) return a.row.perTicket < b.row.perTicket end)
+  return plan, best[need]
+end
+
+local function VendorTooltip(tooltip, price)
+  local have = GetItemCount and GetItemCount(TICKET, true) or 0
+  local need = price - have
+  tooltip:AddLine(" ")
+  tooltip:AddLine(string.format("Darkmoon tickets: costs %d, you have %d", price, have), 1, 0.82, 0)
+  if need <= 0 then
+    tooltip:AddLine("You have enough tickets", 0.2, 1, 0.6)
+    return true
+  end
+  local plan, total = TicketPlan(need)
+  if not plan then
+    tooltip:AddLine("No quest prices from Auctionator yet", 0.6, 0.6, 0.6)
+    return true
+  end
+  local gold = 0
+  for _, p in ipairs(plan) do
+    local v = p.row.cost * p.times
+    if v >= 10000 then gold = math.max(gold, #tostring(math.floor(v / 10000))) end
+  end
+  if total >= 10000 then gold = math.max(gold, #tostring(math.floor(total / 10000))) end
+  ns.MoneyHeader(tooltip, "Cheapest quests for " .. need .. " more", { "cost" }, { gold }, 1, 0.82, 0)
+  for _, p in ipairs(plan) do
+    local got = p.row.tickets * p.times
+    local left = p.row.npc .. ": " .. (p.times > 1 and (p.times .. " x (" .. p.row.items .. ")") or p.row.items)
+      .. " |cff808080(" .. got .. (got == 1 and " ticket)|r" or " tickets)|r") .. p.row.tag
+    ns.MoneyLine(tooltip, left, { p.row.cost * p.times }, { gold }, 1, 1, 1, 1, 1, 1)
+  end
+  ns.MoneyLine(tooltip, "Total", { total }, { gold }, 0.2, 1, 0.6, 0.2, 1, 0.6)
+  return true
+end
+
 ns.AddModule({
   key = "darkmoon",
   label = "Darkmoon Faire",
   tip = "Hover Yebb Neblegear, Kerri Hicks, Rinling or Chronos: their ticket quests with what each "
     .. "costs to complete, best value per ticket first, then the best hand-in at each of the other three. Hand-ins you can craft "
-    .. "are tagged, and use the material cost when crafting is cheaper than buying them made.",
+    .. "are tagged, and use the material cost when crafting is cheaper than buying them made. "
+    .. "At the ticket vendor, items show the cheapest quests for the tickets you're short.",
+  OnItem = function(tooltip)
+    local price = MerchantTicketPrice(tooltip)
+    if not price then return false end
+    return VendorTooltip(tooltip, price)
+  end,
   OnUnit = function(tooltip, npcID)
     if not NPCS[npcID] then return false end
 
