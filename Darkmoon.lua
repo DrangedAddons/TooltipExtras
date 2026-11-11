@@ -167,28 +167,12 @@ ns.AddModule({
     if not NPCS[npcID] then return false end
 
     local rows = Rows(npcID)
-    local gold = false -- show the gold coin on every row if any row needs it
-    for _, r in ipairs(rows) do if r.cost and r.cost >= 10000 then gold = true end end
-    tooltip:AddLine(" ")
-    tooltip:AddDoubleLine("Darkmoon quests, best value first", "cost", 1, 0.82, 0, 1, 0.82, 0)
-    for i, r in ipairs(rows) do
-      if not r.perTicket then
-        tooltip:AddDoubleLine(r.text, "no price", 0.6, 0.6, 0.6, 0.5, 0.5, 0.5)
-      elseif i == 1 then
-        tooltip:AddDoubleLine(r.text .. "  |cff33ff99<< best|r", ns.MoneyColumn(r.cost, gold),
-          0.2, 1, 0.6, 0.2, 1, 0.6)
-      else
-        tooltip:AddDoubleLine(r.text, ns.MoneyColumn(r.cost, gold), 1, 1, 1, 1, 1, 1)
-      end
-    end
-
     -- The best hand-in at each other NPC. Green when its cost per ticket beats this NPC's best.
     local mine = rows[1] and rows[1].perTicket
     local others = {}
     for _, id in ipairs(NPC_ORDER) do
       if id ~= npcID then
-        local best = Rows(id)[1]
-        others[#others + 1] = { name = NPC_NAMES[id], row = best }
+        others[#others + 1] = { name = NPC_NAMES[id], row = Rows(id)[1] }
       end
     end
     table.sort(others, function(a, b)
@@ -196,22 +180,43 @@ ns.AddModule({
       if pa and pb then return pa < pb end
       return pa ~= nil
     end)
-    gold = false
-    for _, o in ipairs(others) do
-      if o.row and o.row.cost and o.row.cost >= 10000 then gold = true end
+
+    -- One gold slot width for the whole tooltip so both blocks' coins line up; 0 when no row
+    -- costs a gold.
+    local goldDigits = 0
+    local function Measure(cost)
+      if cost and cost >= 10000 then
+        goldDigits = math.max(goldDigits, #tostring(math.floor(cost / 10000)))
+      end
     end
+    for _, r in ipairs(rows) do Measure(r.cost) end
+    for _, o in ipairs(others) do Measure(o.row and o.row.cost) end
+
+    tooltip:AddLine(" ")
+    tooltip:AddDoubleLine("Darkmoon quests, best value first", "cost", 1, 0.82, 0, 1, 0.82, 0)
+    for i, r in ipairs(rows) do
+      if not r.perTicket then
+        tooltip:AddDoubleLine(r.text, "no price", 0.6, 0.6, 0.6, 0.5, 0.5, 0.5)
+      elseif i == 1 then
+        ns.MoneyLine(tooltip, r.text .. "  |cff33ff99<< best|r", r.cost, goldDigits,
+          0.2, 1, 0.6, 0.2, 1, 0.6)
+      else
+        ns.MoneyLine(tooltip, r.text, r.cost, goldDigits, 1, 1, 1, 1, 1, 1)
+      end
+    end
+
     tooltip:AddLine(" ")
     tooltip:AddDoubleLine("Best at the other NPCs", "cost", 1, 0.82, 0, 1, 0.82, 0)
     for _, o in ipairs(others) do
       local p = o.row and o.row.perTicket
       local text = o.name .. ": " .. (o.row and o.row.text or "?")
-      local cost = o.row and o.row.cost
       if not p then
         tooltip:AddDoubleLine(text, "no price", 0.6, 0.6, 0.6, 0.5, 0.5, 0.5)
       elseif not mine or p < mine then
-        tooltip:AddDoubleLine(text .. "  |cff33ff99<< better value|r", ns.MoneyColumn(cost, gold), 0.2, 1, 0.6, 0.2, 1, 0.6)
+        ns.MoneyLine(tooltip, text .. "  |cff33ff99<< better value|r", o.row.cost, goldDigits,
+          0.2, 1, 0.6, 0.2, 1, 0.6)
       else
-        tooltip:AddDoubleLine(text, ns.MoneyColumn(cost, gold), 0.8, 0.8, 0.8, 0.8, 0.8, 0.8)
+        ns.MoneyLine(tooltip, text, o.row.cost, goldDigits, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8)
       end
     end
     return true

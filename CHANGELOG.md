@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.5.4
+- Darkmoon Faire: the cost column now lines up exactly. Gold, silver and copper each sit in a fixed-width slot with the coin icons at fixed spots, so the icons form straight columns in both blocks. (0.5.3's padded text still drifted, because digits aren't all the same width.)
+
 ## 0.5.3
 - Darkmoon Faire: the cost column lines up. Silver and copper always show two digits (`05`), and when any row in a block costs gold, every row in it shows gold too (`0`).
 
