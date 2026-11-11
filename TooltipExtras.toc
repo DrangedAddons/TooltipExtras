@@ -2,7 +2,7 @@
 ## Title: TooltipExtras
 ## Notes: Profit lines on item tooltips, per profession: essence combine/split (Enchanting), ore to bar (Mining), cloth to bolt (Tailoring), leather upgrades and cured hides (Leatherworking); Darkmoon Faire ticket hand-ins ranked by cost. Prices from Auctionator.
 ## Author: Dranged
-## Version: 0.5.0
+## Version: 0.5.1
 ## X-DrangedAddons-Games: _forever_
 ## OptionalDeps: Auctionator
 ## SavedVariables: TooltipExtrasDB

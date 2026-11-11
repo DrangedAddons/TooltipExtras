@@ -117,43 +117,54 @@ end
 
 ----------------------------------------------------------------------------------------------
 
+local NPC_NAMES = {
+  [14829] = "Yebb Neblegear",
+  [14832] = "Kerri Hicks",
+  [14841] = "Rinling",
+  [14833] = "Chronos",
+}
+local NPC_ORDER = { 14829, 14832, 14841, 14833 }
+
+-- One NPC's hand-ins as { text, perTicket }, cheapest per ticket first, unpriced last.
+local function Rows(npcID)
+  local rows = {}
+  for _, q in ipairs(NPCS[npcID]) do
+    local itemID, count, tickets = q[1], q[2], q[3]
+    local buy = ns.Price(itemID)
+    local recipe = RECIPES[itemID]
+    local craftable = recipe and KnowsRecipe(recipe.spell)
+    local craft = craftable and CraftCost(recipe)
+    local each, tag
+    if craft and (not buy or craft <= buy) then
+      each, tag = craft, "  |cff66ccff[craft]|r"
+    elseif craftable then
+      each, tag = buy, "  |cff66ccff[craftable, buying is cheaper]|r"
+    else
+      each, tag = buy, ""
+    end
+    rows[#rows + 1] = {
+      text = count .. " x " .. (ns.ItemName(itemID) or q[4]) .. " |cff808080(" .. tickets
+        .. (tickets == 1 and " ticket)|r" or " tickets)|r") .. tag,
+      perTicket = each and each * count / tickets,
+    }
+  end
+  table.sort(rows, function(a, b)
+    if a.perTicket and b.perTicket then return a.perTicket < b.perTicket end
+    return a.perTicket ~= nil
+  end)
+  return rows
+end
+
 ns.AddModule({
   key = "darkmoon",
   label = "Darkmoon Faire",
   tip = "Hover Yebb Neblegear, Kerri Hicks, Rinling or Chronos: their ticket hand-ins ranked by "
-    .. "cost per ticket. Hand-ins you can craft are tagged, and use the material cost when "
-    .. "crafting is cheaper than buying them made. The cheapest is marked best.",
+    .. "cost per ticket, then the best hand-in at each of the other three. Hand-ins you can craft "
+    .. "are tagged, and use the material cost when crafting is cheaper than buying them made.",
   OnUnit = function(tooltip, npcID)
-    local list = NPCS[npcID]
-    if not list then return false end
+    if not NPCS[npcID] then return false end
 
-    local rows = {}
-    for _, q in ipairs(list) do
-      local itemID, count, tickets = q[1], q[2], q[3]
-      local buy = ns.Price(itemID)
-      local recipe = RECIPES[itemID]
-      local craftable = recipe and KnowsRecipe(recipe.spell)
-      local craft = craftable and CraftCost(recipe)
-      local each, tag
-      if craft and (not buy or craft <= buy) then
-        each, tag = craft, "  |cff66ccff[craft]|r"
-      elseif craftable then
-        each, tag = buy, "  |cff66ccff[craftable, buying is cheaper]|r"
-      else
-        each, tag = buy, ""
-      end
-      rows[#rows + 1] = {
-        text = count .. " x " .. (ns.ItemName(itemID) or q[4]) .. " |cff808080(" .. tickets
-          .. (tickets == 1 and " ticket)|r" or " tickets)|r") .. tag,
-        perTicket = each and each * count / tickets,
-      }
-    end
-    -- cheapest per ticket first, unpriced last
-    table.sort(rows, function(a, b)
-      if a.perTicket and b.perTicket then return a.perTicket < b.perTicket end
-      return a.perTicket ~= nil
-    end)
-
+    local rows = Rows(npcID)
     tooltip:AddLine(" ")
     tooltip:AddLine("Darkmoon tickets, cost per ticket", 1, 0.82, 0)
     for i, r in ipairs(rows) do
@@ -164,6 +175,34 @@ ns.AddModule({
           0.2, 1, 0.6, 0.2, 1, 0.6)
       else
         tooltip:AddDoubleLine(r.text, ns.Money(r.perTicket), 1, 1, 1, 1, 1, 1)
+      end
+    end
+
+    -- The best hand-in at each other NPC. Green when it beats this NPC's best.
+    local mine = rows[1] and rows[1].perTicket
+    local others = {}
+    for _, id in ipairs(NPC_ORDER) do
+      if id ~= npcID then
+        local best = Rows(id)[1]
+        others[#others + 1] = { name = NPC_NAMES[id], row = best }
+      end
+    end
+    table.sort(others, function(a, b)
+      local pa, pb = a.row and a.row.perTicket, b.row and b.row.perTicket
+      if pa and pb then return pa < pb end
+      return pa ~= nil
+    end)
+    tooltip:AddLine(" ")
+    tooltip:AddLine("Best at the other NPCs", 1, 0.82, 0)
+    for _, o in ipairs(others) do
+      local p = o.row and o.row.perTicket
+      local text = o.name .. ": " .. (o.row and o.row.text or "?")
+      if not p then
+        tooltip:AddDoubleLine(text, "no price", 0.6, 0.6, 0.6, 0.5, 0.5, 0.5)
+      elseif not mine or p < mine then
+        tooltip:AddDoubleLine(text .. "  |cff33ff99<< cheaper|r", ns.Money(p), 0.2, 1, 0.6, 0.2, 1, 0.6)
+      else
+        tooltip:AddDoubleLine(text, ns.Money(p), 0.8, 0.8, 0.8, 0.8, 0.8, 0.8)
       end
     end
     return true

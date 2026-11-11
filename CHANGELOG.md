@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.5.1
+- Darkmoon Faire: under an NPC's own hand-ins, **Best at the other NPCs** lists the best hand-in at each of the other three, cheapest first. It's green and marked `<< cheaper` when it beats this NPC's best, so you can see where to go.
+
 ## 0.5.0
 - **Darkmoon Faire:** hover a ticket turn-in NPC to see their hand-ins ranked by cost per ticket, buying the items off the AH. The cheapest is green and marked `<< best`. Items with no auction price go to the bottom.
   - Yebb Neblegear: beast parts (Small Furry Paws up to Evil Bat Eyes and Glowing Scorpid Blood).

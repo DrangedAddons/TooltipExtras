@@ -11,7 +11,7 @@ A World of Warcraft addon for WoW Forever that adds profit lines to item tooltip
 Profit is green, loss is red. It takes off the 5% auction house cut by default (you can turn that off). When the other item's price (the greater, lesser, bar, bolt, upgraded leather, cured hide or salt) wasn't seen today, the line shows its age, e.g. "(3d old)".
 
 ## Events
-- **Darkmoon Faire:** hover Yebb Neblegear, Kerri Hicks, Rinling or Chronos to see their ticket hand-ins ranked by cost per ticket when you buy the items off the auction house. Hand-ins you can craft are tagged and cost the materials when that's cheaper than buying them made. The cheapest is marked `<< best`. Open your profession window once so it knows your recipes.
+- **Darkmoon Faire:** hover Yebb Neblegear, Kerri Hicks, Rinling or Chronos to see their ticket hand-ins ranked by cost per ticket when you buy the items off the auction house. Below that, the best hand-in at each of the other three NPCs, marked when it's cheaper. Hand-ins you can craft are tagged and cost the materials when that's cheaper than buying them made. The cheapest is marked `<< best`. Open your profession window once so it knows your recipes.
 
 ## Using it
 `/tte` (or `/tooltipextras`), the addon list button or Options > AddOns > TooltipExtras opens the settings. Settings are account-wide.
