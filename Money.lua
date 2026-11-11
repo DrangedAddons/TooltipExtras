@@ -83,11 +83,14 @@ function ns.MoneyLine(tooltip, left, copper, goldDigits, lr, lg, lb, r, g, b)
   if not right then return end
 
   copper = math.max(0, math.floor((copper or 0) + 0.5))
-  local values = {
-    tostring(math.floor(copper / 10000)),
-    string.format("%02d", math.floor(copper / 100) % 100),
-    string.format("%02d", copper % 100),
-  }
+  local amounts = { math.floor(copper / 10000), math.floor(copper / 100) % 100, copper % 100 }
+  -- The biggest coin with a value leads: coins above it are left blank (slot kept, so the
+  -- column stays put) and it isn't zero-padded. Coins below it show two digits.
+  local lead = amounts[1] > 0 and 1 or (amounts[2] > 0 and 2 or 3)
+  local values = {}
+  for i = 1, 3 do
+    values[i] = i == lead and tostring(amounts[i]) or string.format("%02d", amounts[i])
+  end
 
   local o = Overlay(tooltip)
   o:ClearAllPoints()
@@ -107,8 +110,8 @@ function ns.MoneyLine(tooltip, left, copper, goldDigits, lr, lg, lb, r, g, b)
       t:SetPoint("RIGHT", icon, "LEFT", -GAP, 0)
       t:SetText(values[i])
       t:SetTextColor(r, g, b)
-      t:Show()
-      icon:Show()
+      t:SetShown(i >= lead)
+      icon:SetShown(i >= lead)
       anchor, point = t, "LEFT"
     else
       t:Hide()

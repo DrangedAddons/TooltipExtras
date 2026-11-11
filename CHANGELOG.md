@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.5.5
+- Darkmoon Faire: costs only show the coins they need. Copper-only costs show just copper, silver costs show silver and copper, and the leading coin isn't zero-padded. The coins still sit in their columns.
+
 ## 0.5.4
 - Darkmoon Faire: the cost column now lines up exactly. Gold, silver and copper each sit in a fixed-width slot with the coin icons at fixed spots, so the icons form straight columns in both blocks. (0.5.3's padded text still drifted, because digits aren't all the same width.)
 
