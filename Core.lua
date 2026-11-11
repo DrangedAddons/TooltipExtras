@@ -63,6 +63,22 @@ function ns.Money(copper)
   return sign .. text
 end
 
+-- Money for a right-aligned column: silver and copper always shown as two digits ("05"), gold
+-- shown when withGold, so every row's coins line up. withGold should be true for every row in
+-- the column when any of them has gold.
+local GOLD = "|TInterface\\MoneyFrame\\UI-GoldIcon:0:0:2:0|t"
+local SILVER = "|TInterface\\MoneyFrame\\UI-SilverIcon:0:0:2:0|t"
+local COPPER = "|TInterface\\MoneyFrame\\UI-CopperIcon:0:0:2:0|t"
+function ns.MoneyColumn(copper, withGold)
+  copper = math.floor((copper or 0) + 0.5)
+  local sign = copper < 0 and "-" or ""
+  copper = math.abs(copper)
+  local g, s, c = math.floor(copper / 10000), math.floor(copper / 100) % 100, copper % 100
+  local text = string.format("%02d%s %02d%s", s, SILVER, c, COPPER)
+  if withGold or g > 0 then text = g .. GOLD .. " " .. text end
+  return sign .. text
+end
+
 function ns.ItemName(id)
   local name = (C_Item and C_Item.GetItemNameByID and C_Item.GetItemNameByID(id))
     or (GetItemInfo and GetItemInfo(id))
