@@ -166,19 +166,36 @@ end
 
 local TICKET = 19182 -- Darkmoon Faire Prize Ticket
 
--- The merchant item under the cursor, as its ticket price, or nil.
-local function MerchantTicketPrice(tooltip)
-  if not (MerchantFrame and MerchantFrame:IsShown()) or MerchantFrame.selectedTab == 2 then return nil end
-  local owner = tooltip.GetOwner and tooltip:GetOwner()
-  local name = owner and owner.GetName and owner:GetName()
-  if not (name and name:match("^MerchantItem%d+ItemButton$")) then return nil end
-  local index = owner:GetID()
-  if not (index and GetMerchantItemCostInfo and GetMerchantItemCostItem) then return nil end
-  local kinds = GetMerchantItemCostInfo(index)
-  for k = 1, kinds or 0 do
-    local _, value, link = GetMerchantItemCostItem(index, k)
-    local id = link and tonumber(link:match("item:(%d+)"))
-    if id == TICKET then return value end
+-- Whether a merchant is open. Tracked by event because merchant window replacements may never
+-- show MerchantFrame or use its button names.
+local merchantOpen = false
+local merchantWatch = CreateFrame("Frame")
+merchantWatch:RegisterEvent("MERCHANT_SHOW")
+merchantWatch:RegisterEvent("MERCHANT_CLOSED")
+merchantWatch:SetScript("OnEvent", function(_, event) merchantOpen = event == "MERCHANT_SHOW" end)
+
+local function MerchantItemID(i)
+  if GetMerchantItemID then
+    local id = GetMerchantItemID(i)
+    if id then return id end
+  end
+  local link = GetMerchantItemLink and GetMerchantItemLink(i)
+  return link and tonumber(link:match("item:(%d+)"))
+end
+
+-- The ticket price of item `id` at the open merchant, or nil when it isn't sold for tickets.
+local function MerchantTicketPrice(id)
+  if not merchantOpen or not (GetMerchantNumItems and GetMerchantItemCostInfo and GetMerchantItemCostItem) then
+    return nil
+  end
+  for i = 1, GetMerchantNumItems() or 0 do
+    if MerchantItemID(i) == id then
+      for k = 1, GetMerchantItemCostInfo(i) or 0 do
+        local _, value, link = GetMerchantItemCostItem(i, k)
+        if link and tonumber(link:match("item:(%d+)")) == TICKET then return value end
+      end
+      return nil
+    end
   end
   return nil
 end
@@ -254,8 +271,8 @@ ns.AddModule({
     .. "costs to complete, best value per ticket first, then the best hand-in at each of the other three. Hand-ins you can craft "
     .. "are tagged, and use the material cost when crafting is cheaper than buying them made. "
     .. "At the ticket vendor, items show the cheapest quests for the tickets you're short.",
-  OnItem = function(tooltip)
-    local price = MerchantTicketPrice(tooltip)
+  OnItem = function(tooltip, id)
+    local price = MerchantTicketPrice(id)
     if not price then return false end
     return VendorTooltip(tooltip, price)
   end,

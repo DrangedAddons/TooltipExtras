@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.7.1
+- Ticket vendor: the ticket section now shows with any merchant window, including replacements of the default one. It finds the hovered item in the vendor's list instead of relying on the default window's buttons.
+
 ## 0.7.0
 - Darkmoon Faire ticket vendor (Gelvas Grimegate): hovering an item priced in tickets shows its ticket price, how many tickets you have (bags and bank), and the cheapest quests to make up the difference, with each quest's cost and a total. The quests can come from any of the four turn-in NPCs and can be a mix, whichever adds up to the tickets you need for the least gold. Crafting is used where you know the recipe and it's cheaper, the same as on the NPCs.
 
