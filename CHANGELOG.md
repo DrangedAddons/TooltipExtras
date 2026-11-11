@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.7.2
+- Ticket vendor: fixed the ticket section never showing. Forever's ticket is the Darkmoon Prize Ticket, a different item from classic's Darkmoon Faire Prize Ticket. Tickets are now recognised by name, and your count uses the real item.
+
 ## 0.7.1
 - Ticket vendor: the ticket section now shows with any merchant window, including replacements of the default one. It finds the hovered item in the vendor's list instead of relying on the default window's buttons.
 

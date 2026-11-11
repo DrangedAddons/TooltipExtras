@@ -164,7 +164,12 @@ end
 -- Ticket vendor (Gelvas Grimegate): on an item priced in tickets, what the tickets you're short
 -- would cost through the cheapest mix of quests at all four NPCs.
 
-local TICKET = 19182 -- Darkmoon Faire Prize Ticket
+-- Forever's ticket is "Darkmoon Prize Ticket", not classic's Darkmoon Faire Prize Ticket (19182),
+-- so the ticket is recognised by name and its ID read from the cost link.
+local function IsTicketLink(link)
+  local name = link and link:match("%[(.-)%]")
+  return name and name:find("Darkmoon") and name:find("Ticket") and true or false
+end
 
 -- Whether a merchant is open. Tracked by event because merchant window replacements may never
 -- show MerchantFrame or use its button names.
@@ -183,7 +188,8 @@ local function MerchantItemID(i)
   return link and tonumber(link:match("item:(%d+)"))
 end
 
--- The ticket price of item `id` at the open merchant, or nil when it isn't sold for tickets.
+-- The ticket price of item `id` at the open merchant and the ticket's item ID, or nil when it
+-- isn't sold for tickets.
 local function MerchantTicketPrice(id)
   if not merchantOpen or not (GetMerchantNumItems and GetMerchantItemCostInfo and GetMerchantItemCostItem) then
     return nil
@@ -192,7 +198,7 @@ local function MerchantTicketPrice(id)
     if MerchantItemID(i) == id then
       for k = 1, GetMerchantItemCostInfo(i) or 0 do
         local _, value, link = GetMerchantItemCostItem(i, k)
-        if link and tonumber(link:match("item:(%d+)")) == TICKET then return value end
+        if IsTicketLink(link) then return value, tonumber(link:match("item:(%d+)")) end
       end
       return nil
     end
@@ -233,8 +239,8 @@ local function TicketPlan(need)
   return plan, best[need]
 end
 
-local function VendorTooltip(tooltip, price)
-  local have = GetItemCount and GetItemCount(TICKET, true) or 0
+local function VendorTooltip(tooltip, price, ticketID)
+  local have = ticketID and GetItemCount and GetItemCount(ticketID, true) or 0
   local need = price - have
   tooltip:AddLine(" ")
   tooltip:AddLine(string.format("Darkmoon tickets: costs %d, you have %d", price, have), 1, 0.82, 0)
@@ -272,9 +278,9 @@ ns.AddModule({
     .. "are tagged, and use the material cost when crafting is cheaper than buying them made. "
     .. "At the ticket vendor, items show the cheapest quests for the tickets you're short.",
   OnItem = function(tooltip, id)
-    local price = MerchantTicketPrice(id)
+    local price, ticketID = MerchantTicketPrice(id)
     if not price then return false end
-    return VendorTooltip(tooltip, price)
+    return VendorTooltip(tooltip, price, ticketID)
   end,
   OnUnit = function(tooltip, npcID)
     if not NPCS[npcID] then return false end
