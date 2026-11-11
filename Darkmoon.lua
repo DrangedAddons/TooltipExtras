@@ -125,7 +125,8 @@ local NPC_NAMES = {
 }
 local NPC_ORDER = { 14829, 14832, 14841, 14833 }
 
--- One NPC's hand-ins as { text, perTicket }, cheapest per ticket first, unpriced last.
+-- One NPC's hand-ins as { text, cost = whole quest, perTicket }, cheapest per ticket first,
+-- unpriced last. The tooltip shows the quest cost; per ticket only decides the order.
 local function Rows(npcID)
   local rows = {}
   for _, q in ipairs(NPCS[npcID]) do
@@ -145,6 +146,7 @@ local function Rows(npcID)
     rows[#rows + 1] = {
       text = count .. " x " .. (ns.ItemName(itemID) or q[4]) .. " |cff808080(" .. tickets
         .. (tickets == 1 and " ticket)|r" or " tickets)|r") .. tag,
+      cost = each and each * count,
       perTicket = each and each * count / tickets,
     }
   end
@@ -158,27 +160,27 @@ end
 ns.AddModule({
   key = "darkmoon",
   label = "Darkmoon Faire",
-  tip = "Hover Yebb Neblegear, Kerri Hicks, Rinling or Chronos: their ticket hand-ins ranked by "
-    .. "cost per ticket, then the best hand-in at each of the other three. Hand-ins you can craft "
+  tip = "Hover Yebb Neblegear, Kerri Hicks, Rinling or Chronos: their ticket quests with what each "
+    .. "costs to complete, best value per ticket first, then the best hand-in at each of the other three. Hand-ins you can craft "
     .. "are tagged, and use the material cost when crafting is cheaper than buying them made.",
   OnUnit = function(tooltip, npcID)
     if not NPCS[npcID] then return false end
 
     local rows = Rows(npcID)
     tooltip:AddLine(" ")
-    tooltip:AddLine("Darkmoon tickets, cost per ticket", 1, 0.82, 0)
+    tooltip:AddDoubleLine("Darkmoon quests, best value first", "cost", 1, 0.82, 0, 1, 0.82, 0)
     for i, r in ipairs(rows) do
       if not r.perTicket then
         tooltip:AddDoubleLine(r.text, "no price", 0.6, 0.6, 0.6, 0.5, 0.5, 0.5)
       elseif i == 1 then
-        tooltip:AddDoubleLine(r.text .. "  |cff33ff99<< best|r", ns.Money(r.perTicket),
+        tooltip:AddDoubleLine(r.text .. "  |cff33ff99<< best|r", ns.Money(r.cost),
           0.2, 1, 0.6, 0.2, 1, 0.6)
       else
-        tooltip:AddDoubleLine(r.text, ns.Money(r.perTicket), 1, 1, 1, 1, 1, 1)
+        tooltip:AddDoubleLine(r.text, ns.Money(r.cost), 1, 1, 1, 1, 1, 1)
       end
     end
 
-    -- The best hand-in at each other NPC. Green when it beats this NPC's best.
+    -- The best hand-in at each other NPC. Green when its cost per ticket beats this NPC's best.
     local mine = rows[1] and rows[1].perTicket
     local others = {}
     for _, id in ipairs(NPC_ORDER) do
@@ -193,16 +195,17 @@ ns.AddModule({
       return pa ~= nil
     end)
     tooltip:AddLine(" ")
-    tooltip:AddLine("Best at the other NPCs", 1, 0.82, 0)
+    tooltip:AddDoubleLine("Best at the other NPCs", "cost", 1, 0.82, 0, 1, 0.82, 0)
     for _, o in ipairs(others) do
       local p = o.row and o.row.perTicket
       local text = o.name .. ": " .. (o.row and o.row.text or "?")
+      local cost = o.row and o.row.cost
       if not p then
         tooltip:AddDoubleLine(text, "no price", 0.6, 0.6, 0.6, 0.5, 0.5, 0.5)
       elseif not mine or p < mine then
-        tooltip:AddDoubleLine(text .. "  |cff33ff99<< cheaper|r", ns.Money(p), 0.2, 1, 0.6, 0.2, 1, 0.6)
+        tooltip:AddDoubleLine(text .. "  |cff33ff99<< better value|r", ns.Money(cost), 0.2, 1, 0.6, 0.2, 1, 0.6)
       else
-        tooltip:AddDoubleLine(text, ns.Money(p), 0.8, 0.8, 0.8, 0.8, 0.8, 0.8)
+        tooltip:AddDoubleLine(text, ns.Money(cost), 0.8, 0.8, 0.8, 0.8, 0.8, 0.8)
       end
     end
     return true

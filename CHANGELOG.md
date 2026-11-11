@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.5.2
+- Darkmoon Faire: each quest now shows what it costs to complete next to the tickets it gives, in place of the cost per ticket. The order is still best value per ticket first. The other NPCs' lines say `<< better value` (was `<< cheaper`), since a better deal can still cost more in total.
+
 ## 0.5.1
 - Darkmoon Faire: under an NPC's own hand-ins, **Best at the other NPCs** lists the best hand-in at each of the other three, cheapest first. It's green and marked `<< cheaper` when it beats this NPC's best, so you can see where to go.
 
