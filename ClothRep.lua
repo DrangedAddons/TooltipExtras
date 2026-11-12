@@ -91,7 +91,7 @@ ns.AddModule({
     for _, r in ipairs(rows) do
       if r.cost and r.cost >= 10000 then gold = math.max(gold, #tostring(math.floor(r.cost / 10000))) end
     end
-    ns.MoneyHeader(tooltip, name .. " reputation, Runecloth to reach", { "cost" }, { gold }, 1, 0.82, 0)
+    ns.MoneyHeader(tooltip, name .. " reputation", { "cost" }, { gold }, 1, 0.82, 0)
     for _, r in ipairs(rows) do
       if r.cost then
         ns.MoneyLine(tooltip, r.text, { r.cost }, { gold }, 1, 1, 1, 1, 1, 1)
@@ -99,7 +99,6 @@ ns.AddModule({
         tooltip:AddDoubleLine(r.text, "no price", 1, 1, 1, 0.5, 0.5, 0.5)
       end
     end
-    tooltip:AddLine("Additional Runecloth: 20 for " .. perTurnin .. " rep", 0.5, 0.5, 0.5)
     return true
   end,
 })
