@@ -15,6 +15,8 @@ Profit is green, loss is red. It takes off the 5% auction house cut by default (
   - Hovering Sayge lists which two answers give each of his +10% buffs.
   - At the ticket vendor (Gelvas Grimegate), items priced in tickets show how many tickets you have and the cheapest quests, from any of the four NPCs, to get the rest.
 
+- **Green Hills of Stranglethorn:** hover Barnil Stonepot in Booty Bay to see what each chapter costs if you buy the pages you don't have off the auction house, and the total.
+
 ## Using it
 `/tte` (or `/tooltipextras`), the addon list button or Options > AddOns > TooltipExtras opens the settings. Settings are account-wide.
 

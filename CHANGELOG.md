@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.9.0
+- **Green Hills of Stranglethorn:** hovering Barnil Stonepot in Booty Bay shows what each chapter costs if you buy its pages off the AH, and the total. Pages you already carry (bags or bank) aren't counted. Chapters you've turned in or hold show as done, and the whole thing says done once the final quest is complete. Pages with no auction price are named. It has its own tick box and starts ticked.
+
 ## 0.8.1
 - Sayge's tooltip is shorter: one line per buff, like `+10% Damage    pick 1 - 1` (first menu answer, then second).
 
