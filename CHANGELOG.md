@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.11.1
+- Stone's grinding stone and blasting powder lines sit together, with no blank line between them.
+
 ## 0.11.0
 - **Blacksmithing:** stone now also shows **Make Grinding Stone** with the profit or loss per grinding stone, against selling the stone. Rough and Coarse take 2 stone, Heavy 3, Solid and Dense 4. With Engineering ticked too, you can compare it with the blasting powder line. It has its own tick box and starts ticked.
 

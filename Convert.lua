@@ -29,6 +29,10 @@ local function RecipeNote(c, r)
   return " |cff808080(" .. table.concat(parts, " + ") .. " per " .. (r.makes > 1 and (r.makes .. " ") or "") .. Text(c.output, r) .. ")|r"
 end
 
+-- The last converter line added, so a second converter on the same item (stone: grinding stone
+-- and blasting powder) sits right under the first instead of after another blank line.
+local last = {}
+
 function ns.AddConverter(c)
   local byInput = {} -- input itemID -> recipe
   for _, row in ipairs(c.recipes) do
@@ -62,8 +66,11 @@ function ns.AddConverter(c)
         age = ns.Age(unpack(others))
       end
       local label = Text(c.toLabel, r) .. RecipeNote(c, r) .. age
-      tooltip:AddLine(" ")
+      if not (last.tooltip == tooltip and last.id == id and last.lines == tooltip:NumLines()) then
+        tooltip:AddLine(" ")
+      end
       ns.ProfitLine(tooltip, label, profit)
+      last.tooltip, last.id, last.lines = tooltip, id, tooltip:NumLines()
       return true
     end,
   })
