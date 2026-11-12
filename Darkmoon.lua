@@ -270,19 +270,46 @@ local function VendorTooltip(tooltip, price, ticketID)
   return true
 end
 
+----------------------------------------------------------------------------------------------
+-- Sayge's fortunes: which two answers give which 2-hour buff. Where two routes give the same
+-- buff, the first is shown. { buff, first answer (of 4), second answer (of 3), their text }
+local SAYGE = 14822
+local FORTUNES = {
+  { "+10% Damage", 1, 1, "Slay the man", "Execute your friend painfully" },
+  { "+10% Strength", 3, 2, "Confiscate the corn", "Help your brother in" },
+  { "+10% Agility", 3, 3, "Confiscate the corn", "Keep your brother out without letting him know" },
+  { "+10% Stamina", 3, 1, "Confiscate the corn", "Speak against your brother openly" },
+  { "+10% Intellect", 2, 2, "Turn him over to liege", "Show not so quiet defiance" },
+  { "+10% Spirit", 2, 1, "Turn him over to liege", "Confront the diplomat" },
+  { "+10% Armor", 1, 3, "Slay the man", "Let your friend go" },
+  { "+10% Magic Resistance", 1, 2, "Slay the man", "Execute your friend painlessly" },
+}
+
+local function SaygeTooltip(tooltip)
+  tooltip:AddLine(" ")
+  tooltip:AddDoubleLine("Sayge's fortunes", "answers to pick", 1, 0.82, 0, 1, 0.82, 0)
+  for _, f in ipairs(FORTUNES) do
+    tooltip:AddDoubleLine(f[1], string.format("|cff808080%d.|r %s  |cff808080then %d.|r %s", f[2], f[4], f[3], f[5]),
+      0.2, 1, 0.6, 1, 1, 1)
+  end
+  return true
+end
+
 ns.AddModule({
   key = "darkmoon",
   label = "Darkmoon Faire",
   tip = "Hover Yebb Neblegear, Kerri Hicks, Rinling or Chronos: their ticket quests with what each "
     .. "costs to complete, best value per ticket first, then the best hand-in at each of the other three. Hand-ins you can craft "
     .. "are tagged, and use the material cost when crafting is cheaper than buying them made. "
-    .. "At the ticket vendor, items show the cheapest quests for the tickets you're short.",
+    .. "At the ticket vendor, items show the cheapest quests for the tickets you're short. "
+    .. "Sayge shows which answers give which buff.",
   OnItem = function(tooltip, id)
     local price, ticketID = MerchantTicketPrice(id)
     if not price then return false end
     return VendorTooltip(tooltip, price, ticketID)
   end,
   OnUnit = function(tooltip, npcID)
+    if npcID == SAYGE then return SaygeTooltip(tooltip) end
     if not NPCS[npcID] then return false end
 
     local rows = Rows(npcID)

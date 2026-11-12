@@ -12,6 +12,7 @@ Profit is green, loss is red. It takes off the 5% auction house cut by default (
 
 ## Events
 - **Darkmoon Faire:** hover Yebb Neblegear, Kerri Hicks, Rinling or Chronos to see their ticket quests: what each costs to complete and how many tickets it gives, best value per ticket first, buying the items off the auction house. Below that, the best quest at each of the other three NPCs, marked when it's better value. Hand-ins you can craft are tagged and cost the materials when that's cheaper than buying them made. The cheapest is marked `<< best`. Open your profession window once so it knows your recipes.
+  - Hovering Sayge lists which two answers give each of his +10% buffs.
   - At the ticket vendor (Gelvas Grimegate), items priced in tickets show how many tickets you have and the cheapest quests, from any of the four NPCs, to get the rest.
 
 ## Using it

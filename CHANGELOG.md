@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.8.0
+- Darkmoon Faire: hovering **Sayge** lists each fortune buff (+10% Damage, Strength, Agility, Stamina, Intellect, Spirit, Armor, Magic Resistance) with the two answers to pick, numbered by their place in his menus.
+
 ## 0.7.2
 - Ticket vendor: fixed the ticket section never showing. Forever's ticket is the Darkmoon Prize Ticket, a different item from classic's Darkmoon Faire Prize Ticket. Tickets are now recognised by name, and your count uses the real item.
 
