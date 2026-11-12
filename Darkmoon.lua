@@ -273,6 +273,7 @@ end
 ----------------------------------------------------------------------------------------------
 -- Sayge's fortunes: which two answers give which 2-hour buff. Where two routes give the same
 -- buff, the first is shown. { buff, first answer (of 4), second answer (of 3), their text }
+-- The tooltip shows only the numbers; the text is kept for reference.
 local SAYGE = 14822
 local FORTUNES = {
   { "+10% Damage", 1, 1, "Slay the man", "Execute your friend painfully" },
@@ -287,10 +288,9 @@ local FORTUNES = {
 
 local function SaygeTooltip(tooltip)
   tooltip:AddLine(" ")
-  tooltip:AddDoubleLine("Sayge's fortunes", "answers to pick", 1, 0.82, 0, 1, 0.82, 0)
+  tooltip:AddDoubleLine("Sayge's fortunes", "answers", 1, 0.82, 0, 1, 0.82, 0)
   for _, f in ipairs(FORTUNES) do
-    tooltip:AddDoubleLine(f[1], string.format("|cff808080%d.|r %s  |cff808080then %d.|r %s", f[2], f[4], f[3], f[5]),
-      0.2, 1, 0.6, 1, 1, 1)
+    tooltip:AddDoubleLine(f[1], string.format("pick %d - %d", f[2], f[3]), 0.2, 1, 0.6, 1, 1, 1)
   end
   return true
 end

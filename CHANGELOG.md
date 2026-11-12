@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.8.1
+- Sayge's tooltip is shorter: one line per buff, like `+10% Damage    pick 1 - 1` (first menu answer, then second).
+
 ## 0.8.0
 - Darkmoon Faire: hovering **Sayge** lists each fortune buff (+10% Damage, Strength, Agility, Stamina, Intellect, Spirit, Armor, Magic Resistance) with the two answers to pick, numbered by their place in his menus.
 
