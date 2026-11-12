@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.10.0
+- **Engineering:** stone now shows **Make Blasting Powder** with the profit or loss per powder, against selling the stone. Covers Rough, Coarse and Heavy (1 stone each), and Solid and Dense (2 stone each). Only on the stone, since powder can't be turned back. It has its own tick box and starts ticked.
+
 ## 0.9.0
 - **Green Hills of Stranglethorn:** hovering Barnil Stonepot in Booty Bay shows what each chapter costs if you buy its pages off the AH, and the total. Pages you already carry (bags or bank) aren't counted. Chapters you've turned in or hold show as done, and the whole thing says done once the final quest is complete. Pages with no auction price are named. It has its own tick box and starts ticked.
 
