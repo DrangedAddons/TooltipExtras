@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.12.0
+- **Cloth reputation:** hovering a city's cloth quartermaster shows how much Runecloth you need to reach each standing above yours (Friendly, Honored, Revered, Exalted) with their faction, the number of turn-ins, and what the Runecloth costs on the AH. Covers Stormwind, Ironforge, Gnomeregan Exiles, Darnassus, Orgrimmar, Darkspear Trolls, Thunder Bluff and Undercity. Uses Forever's Additional Runecloth (20 Runecloth for 50 rep, +10% for Humans). The one-time donations aren't counted. It has its own tick box and starts ticked.
+
 ## 0.11.2
 - Conversion lines name their profession in front, e.g. `Blacksmithing: Make Grinding Stone` and `Engineering: Make Blasting Powder`. Mining, Tailoring, Leatherworking and Enchanting essences get the same tag.
 

@@ -1,8 +1,8 @@
 ## Interface: 16001
 ## Title: TooltipExtras
-## Notes: Profit lines on item tooltips, per profession: essence combine/split (Enchanting), ore to bar (Mining), cloth to bolt (Tailoring), leather upgrades and cured hides (Leatherworking), stone to blasting powder (Engineering), stone to grinding stone (Blacksmithing); Darkmoon Faire ticket hand-ins ranked by cost; Green Hills of Stranglethorn page costs. Prices from Auctionator.
+## Notes: Profit lines on item tooltips, per profession: essence combine/split (Enchanting), ore to bar (Mining), cloth to bolt (Tailoring), leather upgrades and cured hides (Leatherworking), stone to blasting powder (Engineering), stone to grinding stone (Blacksmithing); Darkmoon Faire ticket hand-ins ranked by cost; Green Hills of Stranglethorn page costs; Runecloth to each rep standing at cloth quartermasters. Prices from Auctionator.
 ## Author: Dranged
-## Version: 0.11.2
+## Version: 0.12.0
 ## X-DrangedAddons-Games: _forever_
 ## OptionalDeps: Auctionator
 ## SavedVariables: TooltipExtrasDB
@@ -14,6 +14,7 @@ Core.lua
 Money.lua
 Convert.lua
 Blacksmithing.lua
+ClothRep.lua
 Darkmoon.lua
 Engineering.lua
 Essences.lua
