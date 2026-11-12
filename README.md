@@ -5,6 +5,7 @@ A World of Warcraft addon for WoW Forever that adds profit lines to item tooltip
 ## Professions
 - **Enchanting:** on a lesser essence (Magic, Astral, Mystic, Nether, Eternal, Planar, Cosmic, Celestial), **Combine to Greater** with the profit or loss from turning 3 into 1. On a greater, **Split to Lesser** with the profit or loss from turning 1 into 3.
 - **Mining:** on ore, **Smelt to Bar** with the profit or loss per bar from smelting instead of selling the ore. Covers Copper, Tin, Silver, Iron, Gold, Mithril, Truesilver, Dark Iron (8 ore), Thorium, Azerothium (2 ore + Coal) and Heavy Thorium. Extra reagents like Coal count at their auction price.
+- **Blacksmithing:** on stone, **Make Grinding Stone** with the profit or loss per grinding stone from making it instead of selling the stone. Covers Rough, Coarse, Heavy, Solid and Dense.
 - **Engineering:** on stone, **Make Blasting Powder** with the profit or loss per powder from making it instead of selling the stone. Covers Rough, Coarse, Heavy, Solid and Dense.
 - **Tailoring:** on cloth, **Weave to Bolt** with the profit or loss per bolt from weaving instead of selling the cloth. Covers Linen, Wool, Silk, Mageweave and Runecloth.
 - **Leatherworking:** on leather, **Upgrade to <next leather>** with the profit or loss per upgraded leather. Covers Ruined Leather Scraps to Light, then Light to Medium, Heavy, Thick and Rugged. On hides, **Cure Hide** with the profit or loss from curing, with the salt at its auction price (Light, Medium, Heavy, Thick and Rugged Hide).
