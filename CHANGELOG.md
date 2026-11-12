@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.11.2
+- Conversion lines name their profession in front, e.g. `Blacksmithing: Make Grinding Stone` and `Engineering: Make Blasting Powder`. Mining, Tailoring, Leatherworking and Enchanting essences get the same tag.
+
 ## 0.11.1
 - Stone's grinding stone and blasting powder lines sit together, with no blank line between them.
 

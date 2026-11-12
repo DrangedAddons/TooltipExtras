@@ -116,6 +116,11 @@ function ns.Keep()
   return ns.GeneralDB().ahCut and 0.95 or 1
 end
 
+-- "Blacksmithing: " in light blue, to put in front of a conversion line's label.
+function ns.ProfessionTag(name)
+  return "|cff66ccff" .. name .. ":|r "
+end
+
 -- One "Label   +1g 2s 3c" line, green for profit, red for loss. Label in tooltip gold.
 function ns.ProfitLine(tooltip, label, profit)
   if not profit then

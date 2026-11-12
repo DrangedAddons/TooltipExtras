@@ -40,7 +40,7 @@ ns.AddModule({
     end
     -- Auctionator already shows the hovered item's price age, so only flag the other one.
     local other = e.isGreater and e.lesser or e.greater
-    local label = e.isGreater and "Split to Lesser" or "Combine to Greater"
+    local label = ns.ProfessionTag("Enchanting") .. (e.isGreater and "Split to Lesser" or "Combine to Greater")
     tooltip:AddLine(" ")
     ns.ProfitLine(tooltip, label .. (profit and ns.Age(other) or ""), profit)
     return true

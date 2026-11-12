@@ -65,7 +65,7 @@ function ns.AddConverter(c)
         for _, x in ipairs(r.extras) do others[#others + 1] = x[1] end
         age = ns.Age(unpack(others))
       end
-      local label = Text(c.toLabel, r) .. RecipeNote(c, r) .. age
+      local label = ns.ProfessionTag(c.label) .. Text(c.toLabel, r) .. RecipeNote(c, r) .. age
       if not (last.tooltip == tooltip and last.id == id and last.lines == tooltip:NumLines()) then
         tooltip:AddLine(" ")
       end
