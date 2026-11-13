@@ -75,23 +75,26 @@ local function Draw(tooltip, reagents)
     rows[i] = { r, each, cost }
   end
   widest = math.max(widest, total)
-  local gd = GoldDigits(widest)
-  local digits = { gd, gd }
+  local digits = { GoldDigits(widest) }
 
-  ns.MoneyHeader(tooltip, PREFIX, { "each", "cost" }, digits, 1, 0.82, 0)
+  -- One aligned cost column; the price each goes after the name in grey, e.g.
+  -- "8 x Soul Dust (4s 47c)".
+  ns.MoneyHeader(tooltip, PREFIX, { "cost" }, digits, 1, 0.82, 0)
   for _, row in ipairs(rows) do
     local r, each, cost = row[1], row[2], row[3]
     local lr, lg, lb = 0.9, 0.9, 0.9
     if Have(r[1]) < r[2] then lr, lg, lb = 1, 0.13, 0.13 end
     local left = "  " .. r[2] .. " x " .. r[3]
     if each then
-      ns.MoneyLine(tooltip, left, { each, cost }, digits, lr, lg, lb, 1, 1, 1)
+      ns.MoneyLine(tooltip, left .. " |cff999999(" .. ns.Money(each) .. ")|r", { cost }, digits,
+        lr, lg, lb, 1, 1, 1)
     else
       tooltip:AddDoubleLine(left, "no price", lr, lg, lb, 0.5, 0.5, 0.5)
     end
   end
-  ns.MoneyLine(tooltip, missing and "  Total (prices missing)" or "  Total", { nil, total }, digits,
+  ns.MoneyLine(tooltip, missing and "  Total (prices missing)" or "  Total", { total }, digits,
     1, 0.82, 0, 1, 1, 1)
+  tooltip:AddLine(" ") -- gap before the effect text
 end
 
 local function Enabled()

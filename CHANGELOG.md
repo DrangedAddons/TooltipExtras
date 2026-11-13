@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.18.5
+- Recipe reagents: the "each" column is gone. Each reagent shows its single price in grey after the name, e.g. `8 x Soul Dust (4s 47c)`, and the cost column stays. A blank line separates the reagent list from the effect text.
+
 ## 0.18.4
 - Recipe reagents: fixed the priced list not replacing the Reagents line. Forever splits that line with a `|n` line break, which was read as part of the first reagent's name.
 
