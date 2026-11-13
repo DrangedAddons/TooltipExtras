@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.15.0
+- **Fishing:** raw fish list the best zones to catch them, best first, with the fishing skill each zone needs so fish don't get away. Each zone is coloured by your fishing skill (pole and gear included): green if you catch it there now, yellow if you need a lure (the biggest one your skill can use), red if even a lure won't do it. Sagefish, Greater Sagefish, Oily Blackmouth, Firefin Snapper and Deviate Fish also name their school. Winter Squid and Summer Bass say which season. Zones come from Wowhead Forever's catch data. Whitescale Salmon, Spinefin Halibut, Darkclaw Lobster and Large Raw Mightfish have no Forever data yet and say so. Under Professions, with tick boxes for zones, colours and schools. All start ticked.
+
 ## 0.14.1
 - Mage scrolls: lists checked against the method.gg guide. Dropped Imbue Spellbreak from the Comprehension 175 list (not in the game data). Tidied the Cryoblast, Confuse Beast and Rebuke Elemental lines. The heading now reads "Can decipher into:".
 

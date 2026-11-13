@@ -63,7 +63,7 @@ end
 
 -- { key, heading, note, column }
 local CATEGORIES = {
-  { "professions", "Professions", "Crafting profit on ore, cloth, leather, stone and essences.", 1 },
+  { "professions", "Professions", "Crafting profit on ore, cloth, leather, stone and essences; where to fish.", 1 },
   { "events", "Events", "Darkmoon Faire turn-ins, ticket vendor and Sayge.", 2 },
   { "quests", "Quests", "Item turn-in quest costs.", 2 },
   { "reputation", "Reputation", "Cloth turn-ins to each standing.", 2 },
