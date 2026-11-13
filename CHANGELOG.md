@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.18.1
+- Recipe reagents: only on recipes linked in chat. Hovered recipes and the profession window keep the game's own Reagents line.
+
 ## 0.18.0
 - **Recipe reagents:** the priced reagent list now works for every profession, not just Enchanting: Alchemy, Blacksmithing, Cooking, Enchanting, Engineering, First Aid, Leatherworking, Mining and Tailoring (522 reagents from CraftRoute's Forever data). It has its own row under Professions, **Recipe reagents**, and starts ticked. The tick box under Enchanting from 0.17.0 is gone.
 

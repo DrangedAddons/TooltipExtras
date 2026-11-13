@@ -9,7 +9,7 @@ A World of Warcraft addon for WoW Forever that adds profit lines to item tooltip
 - **Engineering:** on stone, **Make Blasting Powder** with the profit or loss per powder from making it instead of selling the stone. Covers Rough, Coarse, Heavy, Solid and Dense.
 - **Tailoring:** on cloth, **Weave to Bolt** with the profit or loss per bolt from weaving instead of selling the cloth. Covers Linen, Wool, Silk, Mageweave and Runecloth.
 - **Leatherworking:** on leather, **Upgrade to <next leather>** with the profit or loss per upgraded leather. Covers Ruined Leather Scraps to Light, then Light to Medium, Heavy, Thick and Rugged. On hides, **Cure Hide** with the profit or loss from curing, with the salt at its auction price (Light, Medium, Heavy, Thick and Rugged Hide).
-- **Recipe reagents:** on a recipe link or in the profession window (every profession), the Reagents line becomes a priced list: each reagent's price, its cost for the recipe, and the total.
+- **Recipe reagents:** on a recipe linked in chat (every profession), the Reagents line becomes a priced list: each reagent's price, its cost for the recipe, and the total.
 - **Fishing:** on a raw fish, the best zones to catch it with its catch % there and the skill each zone needs, the skill green if your skill catches it there, yellow if you need a lure, red if not even then. Fish that come from schools name the school.
 
 Profit is green, loss is red. It takes off the 5% auction house cut by default (you can turn that off). When the other item's price (the greater, lesser, bar, bolt, upgraded leather, cured hide or salt) wasn't seen today, the line shows its age, e.g. "(3d old)".

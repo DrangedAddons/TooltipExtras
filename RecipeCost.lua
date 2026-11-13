@@ -4,7 +4,7 @@
 -- red.
 --
 -- It reads the names and counts off the "Reagents:" line itself and maps the names to item IDs
--- with RecipeData.lua, so it works on any recipe tooltip (chat links, the profession window)
+-- with RecipeData.lua, so it works on any linked recipe
 -- without knowing the spell. A line pre-call draws the list in the line's place and skips the
 -- line. If a name isn't known, the default line is left alone.
 local ADDON, ns = ...
@@ -13,7 +13,7 @@ local MODULE = {
   key = "recipecost",
   category = "professions",
   label = "Recipe reagents",
-  tip = "On a recipe link or in the profession window, for every profession: the Reagents line "
+  tip = "On a recipe linked in chat, for every profession: the Reagents line "
     .. "becomes a priced list, each reagent's price and cost, and the total.",
   options = { { key = "list", label = "Priced reagent list", default = true } },
 }
@@ -98,7 +98,7 @@ local function Enabled()
 end
 
 local function OurTooltip(tooltip)
-  return tooltip == GameTooltip or tooltip == ItemRefTooltip
+  return tooltip == ItemRefTooltip -- chat links only, not hovers or the profession window
 end
 
 -- tooltip -> true while the line after a bare "Reagents:" header should hold the list
@@ -142,7 +142,7 @@ if TooltipDataProcessor and TooltipDataProcessor.AddLinePreCall then
     end)
   end
   -- A header with no list after it must not carry over to the next tooltip.
-  for _, tip in ipairs({ GameTooltip, ItemRefTooltip }) do
+  for _, tip in ipairs({ ItemRefTooltip }) do
     tip:HookScript("OnHide", function(self) pending[self] = nil end)
   end
   if TooltipDataProcessor.AddTooltipPostCall and TooltipDataProcessor.AllTypes then
