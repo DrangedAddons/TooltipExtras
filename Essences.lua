@@ -24,10 +24,12 @@ end
 ns.AddModule({
   key = "essences",
   category = "professions",
+  options = { { key = "swap", label = "Essence combine and split", default = true } },
   label = "Enchanting",
   tip = "Essences. On a lesser: the profit from combining 3 into a greater. "
     .. "On a greater: the profit from splitting it into 3 lessers.",
-  OnItem = function(tooltip, id)
+  OnItem = function(tooltip, id, db)
+    if db.swap == false then return false end
     local e = byItem[id]
     if not e then return false end
     local lp, gp = ns.Price(e.lesser), ns.Price(e.greater)

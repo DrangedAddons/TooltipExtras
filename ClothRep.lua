@@ -56,11 +56,13 @@ end
 ns.AddModule({
   key = "clothrep",
   category = "reputation",
+  options = { { key = "standings", label = "Runecloth to each standing", default = true } },
   label = "Cloth quartermasters",
   tip = "Hover a city's cloth quartermaster: how much Runecloth you need to reach each standing "
     .. "above yours with their faction, and what it costs on the auction house. Uses the "
     .. "repeatable Additional Runecloth (20 for 50 rep, +10% for Humans).",
-  OnUnit = function(tooltip, npcID)
+  OnUnit = function(tooltip, npcID, db)
+    if db.standings == false then return false end
     local factionID = QUARTERMASTERS[npcID]
     if not factionID then return false end
     local name, rep = Rep(factionID)

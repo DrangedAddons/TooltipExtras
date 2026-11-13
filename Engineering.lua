@@ -8,6 +8,7 @@ ns.AddConverter({
   tip = "On stone: whether making it into blasting powder sells for more than the stone itself, "
     .. "as profit or loss per powder.",
   toLabel = "Make Blasting Powder",
+  features = { { key = "powder", label = "Stone to blasting powder" } },
   input = "stone",
   output = "powder",
   -- stone, stones per powder, blasting powder

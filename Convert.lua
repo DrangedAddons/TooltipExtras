@@ -10,6 +10,10 @@
 -- toLabel, input and output can also be function(recipe) -> string, for text that changes per
 -- recipe (Leatherworking names the next leather).
 -- Extra reagents (Coal) are bought for the craft, so they count at full auction price.
+--
+-- features = { { key, label, tip }, ... } are the module's sub-options on the settings page
+-- (default one, "convert"). featureOf(recipe) -> key says which one a recipe belongs to
+-- (default the first).
 local ADDON, ns = ...
 
 local function Text(v, r)
@@ -40,14 +44,23 @@ function ns.AddConverter(c)
       makes = row[5] or 1 }
   end
 
+  local features = c.features or { { key = "convert", label = Text(c.toLabel, {}) } }
+  local options = {}
+  for _, f in ipairs(features) do
+    options[#options + 1] = { key = f.key, label = f.label, tip = f.tip, default = true }
+  end
+
   ns.AddModule({
     key = c.key,
     label = c.label,
     category = c.category or "professions",
     tip = c.tip,
-    OnItem = function(tooltip, id)
+    options = options,
+    OnItem = function(tooltip, id, db)
       local r = byInput[id]
       if not r then return false end
+      local feature = c.featureOf and c.featureOf(r) or features[1].key
+      if db[feature] == false then return false end
       local ip, op = ns.Price(r.input), ns.Price(r.output)
       -- You sell either the inputs or the output, so the AH cut hits both.
       local profit

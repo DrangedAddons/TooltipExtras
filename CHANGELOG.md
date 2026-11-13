@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.13.0
+- Settings: each profession and event has a **+** that opens its parts, each with its own tick box. The module's own box still turns all of it on or off, and open rows are remembered.
+  - Darkmoon Faire: turn-in NPCs' quests, best deal at the other NPCs, ticket vendor, Sayge's fortunes.
+  - Leatherworking: leather upgrades, curing hides.
+  - Blacksmithing, Engineering, Enchanting, Mining, Tailoring, Green Hills and Cloth quartermasters have one part each for now.
+
 ## 0.12.3
 - Settings page: modules are grouped under headings. **Professions** (Blacksmithing, Enchanting, Engineering, Leatherworking, Mining, Tailoring) on the left; **Events** (Darkmoon Faire), **Quests** (Green Hills of Stranglethorn) and **Reputation** (Cloth quartermasters, renamed from Cloth reputation) on the right. Your tick choices are kept.
 

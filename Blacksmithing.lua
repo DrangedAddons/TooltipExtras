@@ -8,6 +8,7 @@ ns.AddConverter({
   tip = "On stone: whether making it into grinding stones sells for more than the stone itself, "
     .. "as profit or loss per grinding stone.",
   toLabel = "Make Grinding Stone",
+  features = { { key = "grinding", label = "Stone to grinding stones" } },
   input = "stone",
   output = "grinding stone",
   -- stone, stones per grinding stone, grinding stone

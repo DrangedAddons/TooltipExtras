@@ -7,6 +7,7 @@ ns.AddConverter({
   tip = "On cloth: whether weaving the cloth into bolts sells for more than the cloth itself, "
     .. "as profit or loss per bolt.",
   toLabel = "Weave to Bolt",
+  features = { { key = "bolts", label = "Cloth to bolts" } },
   input = "cloth",
   output = "bolt",
   -- cloth, cloth per bolt, bolt

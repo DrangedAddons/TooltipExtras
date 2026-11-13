@@ -1,6 +1,7 @@
--- Options > AddOns > TooltipExtras: shared settings at the top, then a tick box per module grouped
--- under category headings (Professions on the left; Events, Quests, Reputation on the right), with
--- each module's own options indented under it.
+-- Options > AddOns > TooltipExtras: shared settings at the top, then the modules grouped under
+-- category headings (Professions on the left; Events, Quests, Reputation on the right). Each
+-- module row has a tick box to turn it all on or off and a +/- to show its features, each with
+-- its own tick box. Which rows are open is remembered.
 local ADDON, ns = ...
 
 local panel = CreateFrame("Frame")
@@ -18,11 +19,10 @@ local function Refresh()
   end
 end
 
--- get() -> bool, set(bool); enabledIf() -> bool greys the box out when false.
-local function Check(x, y, label, tip, get, set, isHeader, enabledIf)
+-- get() -> bool, set(bool); enabledIf() -> bool greys the box out when false. Placed by Layout.
+local function Check(label, tip, get, set, isHeader, enabledIf)
   local cb = CreateFrame("CheckButton", nil, panel, "UICheckButtonTemplate")
   cb:SetSize(26, 26)
-  cb:SetPoint("TOPLEFT", x, y)
   cb.get, cb.enabledIf, cb.isHeader = get, enabledIf, isHeader
   cb.label = cb:CreateFontString(nil, "OVERLAY", isHeader and "GameFontNormal" or "GameFontHighlight")
   cb.label:SetPoint("LEFT", cb, "RIGHT", 4, 0)
@@ -44,17 +44,72 @@ local function Check(x, y, label, tip, get, set, isHeader, enabledIf)
   return cb
 end
 
-local function Heading(y, text, note, x)
+local function Heading(text, note)
   local h = panel:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-  h:SetPoint("TOPLEFT", x or 16, y)
   h:SetText(text)
   if note then
-    local n = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    n:SetPoint("TOPLEFT", h, "BOTTOMLEFT", 0, -4)
-    n:SetText(note)
-    return y - 44
+    h.note = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    h.note:SetPoint("TOPLEFT", h, "BOTTOMLEFT", 0, -4)
+    h.note:SetText(note)
   end
-  return y - 28
+  return h
+end
+
+local function Expanded()
+  local g = ns.GeneralDB()
+  g.expanded = type(g.expanded) == "table" and g.expanded or {}
+  return g.expanded
+end
+
+-- { key, heading, note, column }
+local CATEGORIES = {
+  { "professions", "Professions", "Crafting profit on ore, cloth, leather, stone and essences.", 1 },
+  { "events", "Events", "Darkmoon Faire turn-ins, ticket vendor and Sayge.", 2 },
+  { "quests", "Quests", "Item turn-in quest costs.", 2 },
+  { "reputation", "Reputation", "Cloth turn-ins to each standing.", 2 },
+  { "other", "Other", nil, 2 },
+}
+local COLUMN_X = { 16, 340 }
+local EXPAND_W = 18 -- room for the +/- left of a module's tick box
+
+-- Per column, the rows in order: { kind = "heading" | "module" | "option", widget, module }
+local columns = { {}, {} }
+local columnTop
+
+local function Layout()
+  local open = Expanded()
+  for c, rows in ipairs(columns) do
+    local x, y = COLUMN_X[c], columnTop
+    for _, row in ipairs(rows) do
+      local w = row.widget
+      if row.kind == "heading" then
+        if row.gap then y = y - 12 end
+        w:ClearAllPoints()
+        w:SetPoint("TOPLEFT", x, y)
+        y = y - (w.note and 44 or 28)
+      elseif row.kind == "module" then
+        local isOpen = open[row.module.key]
+        w:ClearAllPoints()
+        w:SetPoint("TOPLEFT", x + EXPAND_W, y)
+        if row.expander then
+          row.expander:ClearAllPoints()
+          row.expander:SetPoint("RIGHT", w, "LEFT", -2, 0)
+          row.expander:SetNormalTexture(isOpen and "Interface\\Buttons\\UI-MinusButton-Up"
+            or "Interface\\Buttons\\UI-PlusButton-Up")
+        end
+        y = y - 28
+      else -- option
+        if open[row.module.key] then
+          w:ClearAllPoints()
+          w:SetPoint("TOPLEFT", x + EXPAND_W + 24, y)
+          w:Show()
+          y = y - 26
+        else
+          w:Hide()
+        end
+      end
+    end
+  end
 end
 
 local built = false
@@ -66,27 +121,17 @@ local function Build()
   title:SetText("TooltipExtras |cff999999v" .. ((C_AddOns and C_AddOns.GetAddOnMetadata or GetAddOnMetadata)(ADDON, "Version") or "") .. "|r")
   local sub = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
   sub:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -6)
-  sub:SetText("Profit lines on item tooltips, with prices from Auctionator. Hover a box for what it adds.")
+  sub:SetText("Profit lines on item tooltips, with prices from Auctionator. Hover a box for what it adds; + shows its parts.")
 
-  local y = Heading(-72, "Prices")
-  Check(16, y, "Take off the 5% auction house cut",
+  local prices = Heading("Prices")
+  prices:SetPoint("TOPLEFT", 16, -72)
+  local cut = Check("Take off the 5% auction house cut",
     "Profit counts the 5% the auction house keeps when you sell.",
     function() return ns.GeneralDB().ahCut end,
     function(v) ns.GeneralDB().ahCut = v end)
-  y = y - 40
+  cut:SetPoint("TOPLEFT", 16, -100)
+  columnTop = -140
 
-  -- Modules grouped by category: Professions down the left, the rest down the right.
-  -- { key, heading, note, column }
-  local CATEGORIES = {
-    { "professions", "Professions", "Crafting profit on ore, cloth, leather, stone and essences.", 1 },
-    { "events", "Events", "Darkmoon Faire turn-ins, ticket vendor and Sayge.", 2 },
-    { "quests", "Quests", "Item turn-in quest costs.", 2 },
-    { "reputation", "Reputation", "Cloth turn-ins to each standing.", 2 },
-    { "other", "Other", nil, 2 },
-  }
-  local COLUMN_X = { 16, 340 }
-  local top = y
-  local colY = { top, top }
   for _, cat in ipairs(CATEGORIES) do
     local list = {}
     for _, m in ipairs(ns.modules) do
@@ -94,25 +139,35 @@ local function Build()
     end
     if #list > 0 then
       table.sort(list, function(a, b) return a.label < b.label end)
-      local col = cat[4]
-      local x = COLUMN_X[col]
-      local cy = Heading(colY[col], cat[2], cat[3], x)
+      local rows = columns[cat[4]]
+      rows[#rows + 1] = { kind = "heading", widget = Heading(cat[2], cat[3]), gap = #rows > 0 }
       for _, m in ipairs(list) do
-        Check(x, cy, m.label, m.tip,
+        local row = { kind = "module", module = m }
+        row.widget = Check(m.label, m.tip,
           function() return ns.ModuleDB(m).enabled end,
           function(v) ns.ModuleDB(m).enabled = v end, true)
-        cy = cy - 28
+        if m.options and #m.options > 0 then
+          local b = CreateFrame("Button", nil, panel)
+          b:SetSize(14, 14)
+          b:SetHighlightTexture("Interface\\Buttons\\UI-PlusButton-Hilight", "ADD")
+          b:SetScript("OnClick", function()
+            local open = Expanded()
+            open[m.key] = not open[m.key] or nil
+            Layout()
+          end)
+          row.expander = b
+        end
+        rows[#rows + 1] = row
         for _, o in ipairs(m.options or {}) do
-          Check(x + 24, cy, o.label, o.tip,
+          rows[#rows + 1] = { kind = "option", module = m, widget = Check(o.label, o.tip,
             function() return ns.ModuleDB(m)[o.key] end,
             function(v) ns.ModuleDB(m)[o.key] = v end, false,
-            function() return ns.ModuleDB(m).enabled end)
-          cy = cy - 26
+            function() return ns.ModuleDB(m).enabled end) }
         end
       end
-      colY[col] = cy - 12
     end
   end
+  Layout()
 end
 
 panel:SetScript("OnShow", function()

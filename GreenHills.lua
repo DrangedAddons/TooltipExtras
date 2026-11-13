@@ -30,11 +30,12 @@ end
 ns.AddModule({
   key = "greenhills",
   category = "quests",
+  options = { { key = "pages", label = "Barnil Stonepot: page costs per chapter", default = true } },
   label = "Green Hills of Stranglethorn",
   tip = "Hover Barnil Stonepot in Booty Bay: what each chapter costs if you buy the pages you don't "
     .. "have off the auction house, and the total.",
-  OnUnit = function(tooltip, npcID)
-    if npcID ~= BARNIL then return false end
+  OnUnit = function(tooltip, npcID, db)
+    if npcID ~= BARNIL or db.pages == false then return false end
 
     if QuestDone(FINAL_QUEST) then
       tooltip:AddLine(" ")

@@ -304,14 +304,30 @@ ns.AddModule({
     .. "are tagged, and use the material cost when crafting is cheaper than buying them made. "
     .. "At the ticket vendor, items show the cheapest quests for the tickets you're short. "
     .. "Sayge shows which answers give which buff.",
-  OnItem = function(tooltip, id)
+  options = {
+    { key = "quests", label = "Turn-in NPCs: their quests", default = true,
+      tip = "Each turn-in NPC's hand-ins with per-ticket and total cost, best value first." },
+    { key = "others", label = "Turn-in NPCs: best at the others", default = true,
+      tip = "Under a turn-in NPC, the best hand-in at each of the other three." },
+    { key = "vendor", label = "Ticket vendor", default = true,
+      tip = "At Gelvas Grimegate, the cheapest quests for the tickets you're short." },
+    { key = "sayge", label = "Sayge's fortunes", default = true,
+      tip = "Which two answers give each +10% buff." },
+  },
+  OnItem = function(tooltip, id, db)
+    if db.vendor == false then return false end
     local price, ticketID = MerchantTicketPrice(id)
     if not price then return false end
     return VendorTooltip(tooltip, price, ticketID)
   end,
-  OnUnit = function(tooltip, npcID)
-    if npcID == SAYGE then return SaygeTooltip(tooltip) end
+  OnUnit = function(tooltip, npcID, db)
+    if npcID == SAYGE then
+      if db.sayge == false then return false end
+      return SaygeTooltip(tooltip)
+    end
     if not NPCS[npcID] then return false end
+    local showQuests, showOthers = db.quests ~= false, db.others ~= false
+    if not (showQuests or showOthers) then return false end
 
     local rows = Rows(npcID)
     -- The best hand-in at each other NPC. Green when its cost per ticket beats this NPC's best.
@@ -343,19 +359,22 @@ ns.AddModule({
     for _, o in ipairs(others) do Measure(o.row) end
     local LABELS = { "per ticket", "cost" }
 
-    tooltip:AddLine(" ")
-    ns.MoneyHeader(tooltip, "Darkmoon quests, best value first", LABELS, goldDigits, 1, 0.82, 0)
-    for i, r in ipairs(rows) do
-      if not r.perTicket then
-        tooltip:AddDoubleLine(r.text, "no price", 0.6, 0.6, 0.6, 0.5, 0.5, 0.5)
-      elseif i == 1 then
-        ns.MoneyLine(tooltip, r.text .. "  |cff33ff99<< best|r", { r.perTicket, r.cost }, goldDigits,
-          0.2, 1, 0.6, 0.2, 1, 0.6)
-      else
-        ns.MoneyLine(tooltip, r.text, { r.perTicket, r.cost }, goldDigits, 1, 1, 1, 1, 1, 1)
+    if showQuests then
+      tooltip:AddLine(" ")
+      ns.MoneyHeader(tooltip, "Darkmoon quests, best value first", LABELS, goldDigits, 1, 0.82, 0)
+      for i, r in ipairs(rows) do
+        if not r.perTicket then
+          tooltip:AddDoubleLine(r.text, "no price", 0.6, 0.6, 0.6, 0.5, 0.5, 0.5)
+        elseif i == 1 then
+          ns.MoneyLine(tooltip, r.text .. "  |cff33ff99<< best|r", { r.perTicket, r.cost }, goldDigits,
+            0.2, 1, 0.6, 0.2, 1, 0.6)
+        else
+          ns.MoneyLine(tooltip, r.text, { r.perTicket, r.cost }, goldDigits, 1, 1, 1, 1, 1, 1)
+        end
       end
     end
 
+    if not showOthers then return true end
     tooltip:AddLine(" ")
     ns.MoneyHeader(tooltip, "Best at the other NPCs", LABELS, goldDigits, 1, 0.82, 0)
     for _, o in ipairs(others) do

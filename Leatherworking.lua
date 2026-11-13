@@ -40,6 +40,11 @@ ns.AddConverter({
     return "upgrade"
   end,
   names = NAMES,
+  features = {
+    { key = "upgrades", label = "Leather upgrades", tip = "Scraps to Light, up to Thick to Rugged." },
+    { key = "hides", label = "Curing hides", tip = "Hide + salt to cured hide." },
+  },
+  featureOf = function(r) return HIDES[r.input] and "hides" or "upgrades" end,
   -- item, how many per craft, result, extra reagents, results per craft
   recipes = {
     { SCRAPS, 3, 2318 }, -- Ruined Leather Scraps -> Light
