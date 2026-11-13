@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.18.6
+- Recipe reagents: a thin gold line sits just above the Total row, so the total stands apart from the reagents without adding space.
+
 ## 0.18.5
 - Recipe reagents: the "each" column is gone. Each reagent shows its single price in grey after the name, e.g. `8 x Soul Dust (4s 47c)`, and the cost column stays. A blank line separates the reagent list from the effect text.
 

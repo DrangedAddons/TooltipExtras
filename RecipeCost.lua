@@ -65,6 +65,30 @@ local function GoldDigits(copper)
 end
 
 -- The priced list, added at the tooltip's current line.
+-- A 1px gold rule in the gap above tooltip line n, from its left text to its right text. It
+-- adds no line, so the rows keep their spacing. One per tooltip, hidden when the tooltip clears.
+local rules = {}
+local function Rule(tooltip, n)
+  local name = tooltip:GetName()
+  local left = name and _G[name .. "TextLeft" .. n]
+  local right = name and _G[name .. "TextRight" .. n]
+  if not left or not right then return end
+  local tex = rules[tooltip]
+  if not tex then
+    tex = tooltip:CreateTexture(nil, "ARTWORK")
+    tex:SetColorTexture(1, 0.82, 0, 0.6)
+    rules[tooltip] = tex
+    local hide = function() tex:Hide() end
+    tooltip:HookScript("OnHide", hide)
+    if tooltip:HasScript("OnTooltipCleared") then tooltip:HookScript("OnTooltipCleared", hide) end
+  end
+  tex:ClearAllPoints()
+  tex:SetPoint("BOTTOMLEFT", left, "TOPLEFT", 0, 1)
+  tex:SetPoint("BOTTOMRIGHT", right, "TOPRIGHT", 0, 1)
+  tex:SetHeight(1)
+  tex:Show()
+end
+
 local function Draw(tooltip, reagents)
   local rows, total, missing, widest = {}, 0, false, 0
   for i, r in ipairs(reagents) do
@@ -94,6 +118,7 @@ local function Draw(tooltip, reagents)
   end
   ns.MoneyLine(tooltip, missing and "  Total (prices missing)" or "  Total", { total }, digits,
     1, 0.82, 0, 1, 1, 1)
+  Rule(tooltip, tooltip:NumLines())
   tooltip:AddLine(" ") -- gap before the effect text
 end
 
