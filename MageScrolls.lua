@@ -1,7 +1,7 @@
 -- Mage Comprehension scrolls (WoW Forever): an untranslated scroll ("Scroll: TOPAZ YORAK")
 -- deciphers into a random mage scroll from its tier's pool. The tier is the scroll's
 -- "Requires Comprehension (N)" line, so this reads that line instead of keeping every item ID.
--- Pools are from the zockify.com Forever Comprehension guide (beta data).
+-- Pools are from the zockify.com and method.gg Forever Comprehension guides (beta data).
 local ADDON, ns = ...
 
 -- Comprehension requirement -> { { result, short effect }, ... }
@@ -20,8 +20,8 @@ local POOLS = {
     { "Imbue Iceknife", "dagger: chance to freeze on hit" },
     { "Imbue Spark", "sword: hits on you may reset Fire Blast" },
     { "Frog Familiar", "+6 Intellect, 1 hr" },
-    { "Confuse Beast", "beast deals 15% less to you, 20 sec" },
-    { "Cryoblast", "115-129 Frost damage around you" },
+    { "Confuse Beast", "beast deals 15% less physical to you" },
+    { "Cryoblast", "Frost damage around you" },
     { "Scroll of the Saber", "Blade of Silverlaine to Coldflame Saber" },
   },
   [50] = {
@@ -31,7 +31,7 @@ local POOLS = {
     { "Imbue Flame", "staff: up to +12 Fire damage" },
     { "Imbue Manablade", "dagger: chance to restore mana on hit" },
     { "Cat Familiar", "+12 Intellect, 1 hr" },
-    { "Rebuke Elemental", "elemental takes 15% more, 20 sec" },
+    { "Rebuke Elemental", "elemental takes 15% more spell damage" },
     { "Khadgar's Unlocking", "opens locks up to 125" },
     { "Scroll of the Blade", "Hypnotic Blade to Narpas Sword" },
   },
@@ -39,8 +39,7 @@ local POOLS = {
     { "Imbue Greater Flame", "staff: up to +20 Fire damage" },
     { "Imbue Greater Frost", "staff: up to +20 Frost damage" },
     { "Imbue Precision", "staff: +1% crit" },
-    { "Imbue Spellbreak", "effect not known yet" },
-    { "Greater Cryoblast", "448-568 Frost damage around you" },
+    { "Greater Cryoblast", "Frost damage around you" },
   },
 }
 
@@ -70,7 +69,7 @@ ns.AddModule({
     local pool = tier and POOLS[tier]
     if not pool then return false end
     tooltip:AddLine(" ")
-    tooltip:AddLine("Deciphers into one of (random):", 1, 0.82, 0)
+    tooltip:AddLine("Can decipher into:", 1, 0.82, 0)
     for _, r in ipairs(pool) do
       tooltip:AddDoubleLine(r[1], r[2], 0.41, 0.8, 0.94, 0.8, 0.8, 0.8)
     end

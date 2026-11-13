@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.14.1
+- Mage scrolls: lists checked against the method.gg guide. Dropped Imbue Spellbreak from the Comprehension 175 list (not in the game data). Tidied the Cryoblast, Confuse Beast and Rebuke Elemental lines. The heading now reads "Can decipher into:".
+
 ## 0.14.0
 - **Mage scrolls:** untranslated Comprehension scrolls ("Scroll: TOPAZ YORAK" and the rest) list the scrolls they can turn into when deciphered, with a short effect for each. The result is random from the scroll's tier (Comprehension 1, 15, 50 or 175), read from its "Requires Comprehension" line. Under a new **Classes** heading in settings, starts ticked. Pools come from a Forever beta guide, so a few may be out of date.
 
