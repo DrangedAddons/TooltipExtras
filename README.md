@@ -19,7 +19,7 @@ Profit is green, loss is red. It takes off the 5% auction house cut by default (
 
 - **Green Hills of Stranglethorn:** hover Barnil Stonepot in Booty Bay to see what each chapter costs if you buy the pages you don't have off the auction house, and the total.
 
-- **Cloth reputation:** hover a city's cloth quartermaster to see how much Runecloth (and gold) it takes to reach each standing above yours with that faction, using the repeatable Additional Runecloth turn-in.
+- **Cloth reputation:** hover a city's cloth quartermaster (or Belanaa Windveil for the High Order in Dalaran) to see how much Runecloth (and gold) it takes to reach each standing above yours with that faction, using the repeatable Additional Runecloth turn-in.
 
 ## Using it
 `/tte` (or `/tooltipextras`), the addon list button or Options > AddOns > TooltipExtras opens the settings. Settings are account-wide.

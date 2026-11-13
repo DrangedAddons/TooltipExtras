@@ -18,6 +18,7 @@ local QUARTERMASTERS = {
   [14727] = 530, -- Vehena: Darkspear Trolls
   [14728] = 81,  -- Rumstag Proudstrider: Thunder Bluff
   [14729] = 68,  -- Ralston Farnsley: Undercity
+  [276170] = 2779, -- Belanaa Windveil (Dalaran, Forever only): High Order; Additional Runecloth is quest 99195
 }
 
 -- Reputation needed to reach each standing, counted from the bottom of Neutral.

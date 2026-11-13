@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.12.2
+- Cloth reputation: added **Belanaa Windveil**, the High Order cloth quartermaster in Dalaran. Same turn-in as the cities: Additional Runecloth, 20 Runecloth for 50 rep.
+
 ## 0.12.1
 - Cloth reputation: shorter tooltip. The header is just "<Faction> reputation", and the "Additional Runecloth: 20 for 50 rep" note is gone.
 
