@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.14.0
+- **Mage scrolls:** untranslated Comprehension scrolls ("Scroll: TOPAZ YORAK" and the rest) list the scrolls they can turn into when deciphered, with a short effect for each. The result is random from the scroll's tier (Comprehension 1, 15, 50 or 175), read from its "Requires Comprehension" line. Under a new **Classes** heading in settings, starts ticked. Pools come from a Forever beta guide, so a few may be out of date.
+
 ## 0.13.0
 - Settings: each profession and event has a **+** that opens its parts, each with its own tick box. The module's own box still turns all of it on or off, and open rows are remembered.
   - Darkmoon Faire: turn-in NPCs' quests, best deal at the other NPCs, ticket vendor, Sayge's fortunes.

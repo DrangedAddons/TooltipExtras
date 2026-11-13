@@ -67,6 +67,7 @@ local CATEGORIES = {
   { "events", "Events", "Darkmoon Faire turn-ins, ticket vendor and Sayge.", 2 },
   { "quests", "Quests", "Item turn-in quest costs.", 2 },
   { "reputation", "Reputation", "Cloth turn-ins to each standing.", 2 },
+  { "classes", "Classes", "Class-only items.", 2 },
   { "other", "Other", nil, 2 },
 }
 local COLUMN_X = { 16, 340 }

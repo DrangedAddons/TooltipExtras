@@ -21,6 +21,8 @@ Profit is green, loss is red. It takes off the 5% auction house cut by default (
 
 - **Cloth reputation:** hover a city's cloth quartermaster (or Belanaa Windveil for the High Order in Dalaran) to see how much Runecloth (and gold) it takes to reach each standing above yours with that faction, using the repeatable Additional Runecloth turn-in.
 
+- **Mage scrolls:** untranslated Comprehension scrolls list what they can decipher into (random within the scroll's tier).
+
 ## Using it
 `/tte` (or `/tooltipextras`), the addon list button or Options > AddOns > TooltipExtras opens the settings. Settings are account-wide.
 

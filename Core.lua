@@ -1,7 +1,7 @@
 -- TooltipExtras: extra lines on item tooltips. Each feature is a module, one per profession:
 --   ns.AddModule{ key, label = profession name, tip, options = { {key, label, tip, default}... },
 --     OnItem(tooltip, itemID, db), OnUnit(tooltip, npcID, db),
---     category = "professions" | "events" | "quests" | "reputation" (settings page heading) }
+--     category = "professions" | "events" | "quests" | "reputation" | "classes" (settings heading) }
 -- OnItem / OnUnit are both optional; each returns true when it added lines.
 -- Core keeps the settings, hooks the item tooltip once and hands every item to each ticked module.
 local ADDON, ns = ...
