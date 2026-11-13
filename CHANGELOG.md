@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.19.1
+- Chat links: with Chattynator loaded, TooltipExtras leaves hover tooltips to Chattynator instead of showing a second one. Recipe reagent lists still show on Chattynator's hovers.
+
 ## 0.19.0
 - **Chat links** (new, under Other): hover an item, recipe, spell, quest, achievement or currency link in chat to see its tooltip without clicking. Starts ticked. Recipe reagent lists show on these hovers too; bag and profession-window hovers still keep the game's Reagents line.
 - New file: restart the game client once (a /reload won't load it).
