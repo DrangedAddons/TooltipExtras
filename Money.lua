@@ -9,7 +9,8 @@
 --
 -- One entry per column, left to right. goldDigits is the width of that column's gold slot in
 -- digits; 0 leaves the slot out. Use the same goldDigits on every line that should line up.
--- A nil copper leaves that column blank.
+-- A nil copper leaves that column blank. ns.TextLine and ns.MixedLine (further down) do text
+-- columns, and text and money columns together.
 local ADDON, ns = ...
 
 local SPACER = "Interface\\AddOns\\TooltipExtras\\blank"
@@ -201,6 +202,69 @@ function ns.TextLine(tooltip, left, texts, samples, lr, lg, lb, colors)
     label:SetText(texts[c] or "")
     label:SetTextColor(color[1], color[2], color[3])
     label:Show()
+  end
+end
+
+-- Text and money columns on one line. spec describes the columns and is shared by every line
+-- that should line up: { { text = { sample, ... } } | { gold = goldDigits }, ... }.
+-- values[c] is a string (drawn as right-aligned text, also in a money column, e.g. a header
+-- label), a number (copper, money columns only) or nil (blank). colors[c] = { r, g, b }.
+--   ns.MixedLine(tooltip, left, spec, values, lr, lg, lb, colors)
+local function MixedLayout(spec)
+  local font, size, flags = GameTooltipText:GetFont()
+  size = math.floor(size + 0.5)
+  local cols, total = {}, 0
+  for c, s in ipairs(spec) do
+    if s.text then
+      cols[c] = { width = TextLayout({ s.text }).cols[1].width }
+    else
+      cols[c] = Layout({ s.gold or 0 }).cols[1]
+    end
+    total = total + cols[c].width + (c > 1 and COLSEP or 0)
+  end
+  return { font = font, size = size, flags = flags, cols = cols, total = total }
+end
+
+local function DrawMoney(col, spec, L, copper, r, g, b)
+  copper = math.max(0, math.floor(copper + 0.5))
+  local parts = { math.floor(copper / 10000), math.floor(copper / 100) % 100, copper % 100 }
+  local lead = parts[1] > 0 and 1 or (parts[2] > 0 and 2 or 3)
+  if lead < spec.first then lead = spec.first end
+  local anchor, point, offset = col.anchor, "RIGHT", 0
+  for i = 3, spec.first, -1 do
+    local t, icon = col.text[i], col.icon[i]
+    icon:ClearAllPoints()
+    icon:SetSize(L.size, L.size)
+    icon:SetPoint("RIGHT", anchor, point, offset, 0)
+    t:ClearAllPoints()
+    t:SetFont(L.font, L.size, L.flags)
+    t:SetWidth(spec.slots[i])
+    t:SetPoint("RIGHT", icon, "LEFT", -GAP, 0)
+    t:SetText(i == lead and tostring(parts[i]) or string.format("%02d", parts[i]))
+    t:SetTextColor(r, g, b)
+    t:SetShown(i >= lead)
+    icon:SetShown(i >= lead)
+    anchor, point, offset = t, "LEFT", -SEP
+  end
+end
+
+function ns.MixedLine(tooltip, left, spec, values, lr, lg, lb, colors)
+  local L = MixedLayout(spec)
+  local o = PlaceLine(tooltip, left, L, lr, lg, lb)
+  if not o then return end
+  for c in ipairs(L.cols) do
+    local col, v = o.cols[c], values[c]
+    local color = colors and colors[c] or { 1, 1, 1 }
+    if type(v) == "number" and L.cols[c].slots then
+      DrawMoney(col, L.cols[c], L, v, color[1], color[2], color[3])
+    elseif v ~= nil then
+      col.label:ClearAllPoints()
+      col.label:SetFont(L.font, L.size, L.flags)
+      col.label:SetPoint("RIGHT", col.anchor, "RIGHT", 0, 0)
+      col.label:SetText(tostring(v))
+      col.label:SetTextColor(color[1], color[2], color[3])
+      col.label:Show()
+    end
   end
 end
 

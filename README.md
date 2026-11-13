@@ -4,6 +4,7 @@ A World of Warcraft addon for WoW Forever that adds profit lines to item tooltip
 
 ## Professions
 - **Enchanting:** on a lesser essence (Magic, Astral, Mystic, Nether, Eternal, Planar, Cosmic, Celestial), **Combine to Greater** with the profit or loss from turning 3 into 1. On a greater, **Split to Lesser** with the profit or loss from turning 1 into 3.
+  - **Disenchant value:** on green, blue and purple weapons and armour, what it can disenchant into: each material with its quantity range and price each, the chance of getting it, its expected value, and the expected total. Uses the original game's disenchant table, checked against Wowhead Forever.
 - **Mining:** on ore, **Smelt to Bar** with the profit or loss per bar from smelting instead of selling the ore. Covers Copper, Tin, Silver, Iron, Gold, Mithril, Truesilver, Dark Iron (8 ore), Thorium, Azerothium (2 ore + Coal) and Heavy Thorium. Extra reagents like Coal count at their auction price.
 - **Blacksmithing:** on stone, **Make Grinding Stone** with the profit or loss per grinding stone from making it instead of selling the stone. Covers Rough, Coarse, Heavy, Solid and Dense.
 - **Engineering:** on stone, **Make Blasting Powder** with the profit or loss per powder from making it instead of selling the stone. Covers Rough, Coarse, Heavy, Solid and Dense.

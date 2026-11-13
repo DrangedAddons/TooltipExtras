@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.20.0
+- **Enchanting: Disenchant value** (new, starts ticked). On green, blue and purple weapons and armour: each material it can disenchant into with its quantity range and price each, the chance of getting it, its expected value (chance x average quantity x price), and the expected total. Auctionator's own disenchant line only covers Warlords of Draenor and later gear, so it shows nothing on Forever.
+- The disenchant table is the original game's, checked against Wowhead Forever's disenchant counts for every material; they match. Forever has no Burning Crusade materials, so blues above level 65 give Large Brilliant Shards and purples above 60 give 1-2 Nexus Crystals.
+- Essences count at the better of their own price and their combine/split value (3 lesser = 1 greater).
+- New file: restart the game client once (a /reload won't load it).
+
 ## 0.19.1
 - Chat links: with Chattynator loaded, TooltipExtras leaves hover tooltips to Chattynator instead of showing a second one. Recipe reagent lists still show on Chattynator's hovers.
 

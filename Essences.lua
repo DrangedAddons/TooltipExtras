@@ -1,4 +1,5 @@
--- Enchanting: essences convert 3 lesser <-> 1 greater (right-click either one).
+-- Enchanting: essences convert 3 lesser <-> 1 greater (right-click either one). Disenchant
+-- values on gear come from Disenchant.lua.
 -- One tooltip line: on a lesser, the profit from combining 3 into a greater; on a greater, the
 -- profit from splitting it into 3 lessers. Prices come from Auctionator.
 local ADDON, ns = ...
@@ -24,11 +25,20 @@ end
 ns.AddModule({
   key = "essences",
   category = "professions",
-  options = { { key = "swap", label = "Essence combine and split", default = true } },
+  options = {
+    { key = "swap", label = "Essence combine and split", default = true },
+    { key = "disenchant", label = "Disenchant value",
+      tip = "On green, blue and purple weapons and armour: what it disenchants into, the chance "
+        .. "of each, and the expected value at auction prices.", default = true },
+  },
   label = "Enchanting",
   tip = "Essences. On a lesser: the profit from combining 3 into a greater. "
-    .. "On a greater: the profit from splitting it into 3 lessers.",
+    .. "On a greater: the profit from splitting it into 3 lessers. "
+    .. "On gear: what it disenchants into and what that's worth.",
   OnItem = function(tooltip, id, db)
+    if db.disenchant ~= false and ns.DisenchantLines and ns.DisenchantLines(tooltip, id) then
+      return true
+    end
     if db.swap == false then return false end
     local e = byItem[id]
     if not e then return false end
