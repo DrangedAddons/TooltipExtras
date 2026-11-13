@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.18.8
+- Settings: the category notes wrap inside their column, so the Professions note no longer runs into Events. The Professions note is shorter too.
+- Settings: **Recipe reagents** sits under its own **All professions** sub-heading below the professions, since it works on every profession's recipes rather than being one.
+
 ## 0.18.7
 - Recipe reagents: a second thin gold line sits just below the Total row, so it's boxed in above and below.
 

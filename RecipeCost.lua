@@ -12,6 +12,8 @@ local ADDON, ns = ...
 local MODULE = {
   key = "recipecost",
   category = "professions",
+  subcategory = "All professions", -- not a profession itself, so its own group in settings
+  subnote = "Works on every profession's recipes.",
   label = "Recipe reagents",
   tip = "On a recipe linked in chat, for every profession: the Reagents line "
     .. "becomes a priced list, each reagent's price and cost, and the total.",

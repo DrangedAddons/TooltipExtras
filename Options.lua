@@ -44,12 +44,18 @@ local function Check(label, tip, get, set, isHeader, enabledIf)
   return cb
 end
 
-local function Heading(text, note)
-  local h = panel:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+local COLUMN_W = 300 -- notes wrap at this width so they stay inside their column
+
+-- small = a sub-heading inside a category (smaller font, less space above).
+local function Heading(text, note, small)
+  local h = panel:CreateFontString(nil, "OVERLAY", small and "GameFontNormal" or "GameFontNormalLarge")
   h:SetText(text)
   if note then
     h.note = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     h.note:SetPoint("TOPLEFT", h, "BOTTOMLEFT", 0, -4)
+    h.note:SetWidth(COLUMN_W)
+    h.note:SetJustifyH("LEFT")
+    h.note:SetWordWrap(true)
     h.note:SetText(note)
   end
   return h
@@ -63,7 +69,7 @@ end
 
 -- { key, heading, note, column }
 local CATEGORIES = {
-  { "professions", "Professions", "Crafting profit on ore, cloth, leather, stone and essences; where to fish.", 1 },
+  { "professions", "Professions", "Crafting profit, recipe costs and where to fish.", 1 },
   { "events", "Events", "Darkmoon Faire turn-ins, ticket vendor and Sayge.", 2 },
   { "quests", "Quests", "Item turn-in quest costs.", 2 },
   { "reputation", "Reputation", "Cloth turn-ins to each standing.", 2 },
@@ -84,10 +90,13 @@ local function Layout()
     for _, row in ipairs(rows) do
       local w = row.widget
       if row.kind == "heading" then
-        if row.gap then y = y - 12 end
+        if row.gap then y = y - (row.small and 6 or 12) end
         w:ClearAllPoints()
         w:SetPoint("TOPLEFT", x, y)
-        y = y - (w.note and 44 or 28)
+        -- measured, so a note that wraps to two lines pushes the rows down
+        local h = w:GetStringHeight() + (row.small and 6 or 10)
+        if w.note then h = h + 4 + w.note:GetStringHeight() end
+        y = y - math.ceil(h)
       elseif row.kind == "module" then
         local isOpen = open[row.module.key]
         w:ClearAllPoints()
@@ -139,10 +148,22 @@ local function Build()
       if (m.category or "other") == cat[1] then list[#list + 1] = m end
     end
     if #list > 0 then
-      table.sort(list, function(a, b) return a.label < b.label end)
+      -- Modules without a sub-group first, then each sub-group (m.subcategory) under its own
+      -- small heading; alphabetical within each.
+      table.sort(list, function(a, b)
+        local sa, sb = a.subcategory or "", b.subcategory or ""
+        if sa ~= sb then return sa < sb end
+        return a.label < b.label
+      end)
       local rows = columns[cat[4]]
       rows[#rows + 1] = { kind = "heading", widget = Heading(cat[2], cat[3]), gap = #rows > 0 }
+      local group
       for _, m in ipairs(list) do
+        if m.subcategory and m.subcategory ~= group then
+          group = m.subcategory
+          rows[#rows + 1] = { kind = "heading", small = true, gap = true,
+            widget = Heading(group, m.subnote, true) }
+        end
         local row = { kind = "module", module = m }
         row.widget = Check(m.label, m.tip,
           function() return ns.ModuleDB(m).enabled end,
