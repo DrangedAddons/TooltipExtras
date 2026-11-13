@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.21.0
+- Auctionator's **Disenchant** line, under Vendor and Auction, now shows the expected disenchant value on Forever gear. Auctionator only knows Warlords of Draenor and later gear, so TooltipExtras fills it in when Auctionator has none. Auctionator's files aren't touched. It follows the Enchanting **Disenchant value** tick box and needs Auctionator's "Show estimated disenchant item value" setting on.
+- **Best way to sell** (new, under Other, starts ticked): of Auctionator's Vendor, Auction and Disenchant lines, the one worth the most turns green. Auction and disenchant count the 5% auction house cut when that setting is on, since vendoring has none.
+
 ## 0.20.0
 - **Enchanting: Disenchant value** (new, starts ticked). On green, blue and purple weapons and armour: each material it can disenchant into with its quantity range and price each, the chance of getting it, its expected value (chance x average quantity x price), and the expected total. Auctionator's own disenchant line only covers Warlords of Draenor and later gear, so it shows nothing on Forever.
 - The disenchant table is the original game's, checked against Wowhead Forever's disenchant counts for every material; they match. Forever has no Burning Crusade materials, so blues above level 65 give Large Brilliant Shards and purples above 60 give 1-2 Nexus Crystals.

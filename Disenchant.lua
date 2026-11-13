@@ -124,22 +124,43 @@ end
 
 local CHANCE = { "chance", "100%" }
 
--- Adds the disenchant rows for item id; true when it added any.
-function ns.DisenchantLines(tooltip, id)
+-- For item id: { { material, chance %, price each, expected value }, ... }, the expected total
+-- and whether any price is missing. nil when it can't be disenchanted.
+local function Compute(id)
   local row = Row(id)
-  if not row then return false end
+  if not row then return nil end
   local sum = 0
   for i = 3, #row do sum = sum + row[i][2] end
-  local lines, total, missing, widest = {}, 0, false, 0
+  local lines, total, missing = {}, 0, false
   for i = 3, #row do
     local m = row[i]
     local pct = m[2] * 100 / sum
     local each = Value(m[1])
     local value = each and each * m[5] * pct / 100
     if value then total = total + value else missing = true end
-    widest = math.max(widest, value or 0)
     lines[#lines + 1] = { m, pct, each, value }
   end
+  return lines, total, missing
+end
+
+-- Expected disenchant value of one item id in copper; nil when it can't be disenchanted or a
+-- material has no price.
+function ns.DisenchantValue(id)
+  local lines, total, missing = Compute(id)
+  if not lines or missing then return nil end
+  return math.floor(total + 0.5)
+end
+
+function ns.CanDisenchant(id)
+  return Row(id) ~= nil
+end
+
+-- Adds the disenchant rows for item id; true when it added any.
+function ns.DisenchantLines(tooltip, id)
+  local lines, total, missing = Compute(id)
+  if not lines then return false end
+  local widest = 0
+  for _, l in ipairs(lines) do widest = math.max(widest, l[4] or 0) end
   local spec = { { text = CHANCE }, { gold = GoldDigits(math.max(widest, total)) } }
   local GOLD, WHITE = { 1, 0.82, 0 }, { 1, 1, 1 }
   tooltip:AddLine(" ")
@@ -156,4 +177,112 @@ function ns.DisenchantLines(tooltip, id)
   ns.MixedLine(tooltip, missing and "  Expected (prices missing)" or "  Expected", spec,
     { nil, total }, 1, 0.82, 0, { WHITE, WHITE })
   return true
+end
+
+----------------------------------------------------------------------------------------------
+-- Auctionator's own "Disenchant" line (under Vendor and Auction) only knows Warlords of Draenor
+-- and later gear, so it's blank on Forever. When it has no value, it gets ours instead. Nothing
+-- in Auctionator's files changes: its two lookups are wrapped at login.
+
+local function DisenchantOn()
+  for _, m in ipairs(ns.modules) do
+    if m.key == "essences" then
+      local db = ns.ModuleDB(m)
+      return db.enabled and db.disenchant ~= false
+    end
+  end
+  return false
+end
+
+local function IDOf(itemLink)
+  if type(itemLink) ~= "string" then return nil end
+  return (C_Item and C_Item.GetItemInfoInstant or GetItemInfoInstant)(itemLink)
+end
+
+local function WrapAuctionator()
+  local E = Auctionator and Auctionator.Enchant
+  if not E or not E.GetDisenchantAuctionPrice or not E.DisenchantStatus or E.TooltipExtras then return end
+  E.TooltipExtras = true
+  local price, status = E.GetDisenchantAuctionPrice, E.DisenchantStatus
+  E.GetDisenchantAuctionPrice = function(itemLink, itemInfo, ...)
+    local v = price(itemLink, itemInfo, ...)
+    if v == nil and DisenchantOn() then
+      local ok, id = pcall(IDOf, itemLink)
+      if ok and id then v = ns.DisenchantValue(id) end
+    end
+    return v
+  end
+  E.DisenchantStatus = function(itemInfo, ...)
+    local s = status(itemInfo, ...)
+    -- itemInfo[2] is the link; ours are the original game's items, so mark them supported and
+    -- Auctionator shows "Unknown" when a material has no price.
+    local link = type(itemInfo) == "table" and itemInfo[2]
+    if type(s) == "table" and DisenchantOn() then
+      local ok, id = pcall(IDOf, link)
+      if ok and id and ns.CanDisenchant(id) then
+        s.isDisenchantable, s.supportedXpac = true, true
+      end
+    end
+    return s
+  end
+end
+
+local login = CreateFrame("Frame")
+login:RegisterEvent("PLAYER_LOGIN")
+login:SetScript("OnEvent", WrapAuctionator)
+
+----------------------------------------------------------------------------------------------
+-- Best of Auctionator's Vendor, Auction and Disenchant lines in green. Compared after the auction
+-- house cut (when that setting is on), since vendoring has none.
+
+local BEST = "|cff33ff33"
+
+local MODULE = {
+  key = "bestsale",
+  category = "other",
+  label = "Best way to sell",
+  tip = "Of Auctionator's Vendor, Auction and Disenchant lines, the one worth the most turns green. "
+    .. "Auction and disenchant values count the 5% auction house cut when that setting is on.",
+  options = { { key = "highlight", label = "Highlight the best of Vendor, Auction, Disenchant", default = true } },
+}
+ns.AddModule(MODULE)
+
+-- The tooltip line whose left text is label, optionally followed by a count; nil if none.
+local function FindLine(tooltip, label)
+  if type(label) ~= "string" then return nil end
+  local name = tooltip:GetName()
+  if not name then return nil end
+  local pattern = "^" .. label:gsub("%p", "%%%0") .. "%f[^%a]"
+  for i = 1, tooltip:NumLines() do
+    local left = _G[name .. "TextLeft" .. i]
+    local text = left and left:GetText()
+    if text and text:match(pattern) and not text:match("^" .. label:gsub("%p", "%%%0") .. " %a") then
+      return left, _G[name .. "TextRight" .. i]
+    end
+  end
+end
+
+MODULE.OnItem = function(tooltip, id, db)
+  if db.highlight == false then return false end
+  local info = { (C_Item and C_Item.GetItemInfo or GetItemInfo)(id) }
+  local keep = ns.Keep()
+  local found = {}
+  local function Try(label, value)
+    if not value or value <= 0 then return end
+    local left, right = FindLine(tooltip, label)
+    if left then found[#found + 1] = { value, left, right } end
+  end
+  Try(AUCTIONATOR_L_VENDOR, info[11])
+  local ah = ns.Price(id)
+  Try(AUCTIONATOR_L_AUCTION, ah and ah * keep)
+  local de = DisenchantOn() and ns.DisenchantValue(id)
+  Try(AUCTIONATOR_L_DISENCHANT, de and de * keep)
+  if #found < 2 then return false end
+  table.sort(found, function(a, b) return a[1] > b[1] end)
+  local left, right = found[1][2], found[1][3]
+  left:SetText(BEST .. left:GetText() .. "|r")
+  if right and right:GetText() then
+    right:SetText(BEST .. right:GetText():gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "") .. "|r")
+  end
+  return false
 end

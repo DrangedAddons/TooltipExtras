@@ -4,7 +4,7 @@ A World of Warcraft addon for WoW Forever that adds profit lines to item tooltip
 
 ## Professions
 - **Enchanting:** on a lesser essence (Magic, Astral, Mystic, Nether, Eternal, Planar, Cosmic, Celestial), **Combine to Greater** with the profit or loss from turning 3 into 1. On a greater, **Split to Lesser** with the profit or loss from turning 1 into 3.
-  - **Disenchant value:** on green, blue and purple weapons and armour, what it can disenchant into: each material with its quantity range and price each, the chance of getting it, its expected value, and the expected total. Uses the original game's disenchant table, checked against Wowhead Forever.
+  - **Disenchant value:** on green, blue and purple weapons and armour, what it can disenchant into: each material with its quantity range and price each, the chance of getting it, its expected value, and the expected total. Uses the original game's disenchant table, checked against Wowhead Forever. The expected value also fills Auctionator's own Disenchant line, under Vendor and Auction.
 - **Mining:** on ore, **Smelt to Bar** with the profit or loss per bar from smelting instead of selling the ore. Covers Copper, Tin, Silver, Iron, Gold, Mithril, Truesilver, Dark Iron (8 ore), Thorium, Azerothium (2 ore + Coal) and Heavy Thorium. Extra reagents like Coal count at their auction price.
 - **Blacksmithing:** on stone, **Make Grinding Stone** with the profit or loss per grinding stone from making it instead of selling the stone. Covers Rough, Coarse, Heavy, Solid and Dense.
 - **Engineering:** on stone, **Make Blasting Powder** with the profit or loss per powder from making it instead of selling the stone. Covers Rough, Coarse, Heavy, Solid and Dense.
@@ -28,6 +28,8 @@ Profit is green, loss is red. It takes off the 5% auction house cut by default (
 
 ## Other
 - **Chat links:** hover a link in chat (item, recipe, spell, quest, achievement, currency) to see its tooltip without clicking. Recipe reagent lists show on these hovers too. With Chattynator, its own hover tooltips are used and get the reagent lists.
+
+- **Best way to sell:** of Auctionator's Vendor, Auction and Disenchant lines, the one worth the most turns green (after the 5% auction house cut, if that's on).
 
 ## Using it
 `/tte` (or `/tooltipextras`), the addon list button or Options > AddOns > TooltipExtras opens the settings. Settings are account-wide.
