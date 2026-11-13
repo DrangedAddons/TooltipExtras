@@ -65,28 +65,37 @@ local function GoldDigits(copper)
 end
 
 -- The priced list, added at the tooltip's current line.
--- A 1px gold rule in the gap above tooltip line n, from its left text to its right text. It
--- adds no line, so the rows keep their spacing. One per tooltip, hidden when the tooltip clears.
+-- 1px gold rules in the gaps above and below tooltip line n, from its left text to its right
+-- text. They add no lines, so the rows keep their spacing. Hidden when the tooltip clears.
 local rules = {}
 local function Rule(tooltip, n)
   local name = tooltip:GetName()
   local left = name and _G[name .. "TextLeft" .. n]
   local right = name and _G[name .. "TextRight" .. n]
   if not left or not right then return end
-  local tex = rules[tooltip]
-  if not tex then
-    tex = tooltip:CreateTexture(nil, "ARTWORK")
-    tex:SetColorTexture(1, 0.82, 0, 0.6)
-    rules[tooltip] = tex
-    local hide = function() tex:Hide() end
+  local pair = rules[tooltip]
+  if not pair then
+    pair = {}
+    for i = 1, 2 do
+      pair[i] = tooltip:CreateTexture(nil, "ARTWORK")
+      pair[i]:SetColorTexture(1, 0.82, 0, 0.6)
+    end
+    rules[tooltip] = pair
+    local hide = function() pair[1]:Hide() pair[2]:Hide() end
     tooltip:HookScript("OnHide", hide)
     if tooltip:HasScript("OnTooltipCleared") then tooltip:HookScript("OnTooltipCleared", hide) end
   end
-  tex:ClearAllPoints()
-  tex:SetPoint("BOTTOMLEFT", left, "TOPLEFT", 0, 1)
-  tex:SetPoint("BOTTOMRIGHT", right, "TOPRIGHT", 0, 1)
-  tex:SetHeight(1)
-  tex:Show()
+  local above, below = pair[1], pair[2]
+  above:ClearAllPoints()
+  above:SetPoint("BOTTOMLEFT", left, "TOPLEFT", 0, 1)
+  above:SetPoint("BOTTOMRIGHT", right, "TOPRIGHT", 0, 1)
+  below:ClearAllPoints()
+  below:SetPoint("TOPLEFT", left, "BOTTOMLEFT", 0, -1)
+  below:SetPoint("TOPRIGHT", right, "BOTTOMRIGHT", 0, -1)
+  for _, tex in ipairs(pair) do
+    tex:SetHeight(1)
+    tex:Show()
+  end
 end
 
 local function Draw(tooltip, reagents)

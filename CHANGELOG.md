@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.18.7
+- Recipe reagents: a second thin gold line sits just below the Total row, so it's boxed in above and below.
+
 ## 0.18.6
 - Recipe reagents: a thin gold line sits just above the Total row, so the total stands apart from the reagents without adding space.
 
