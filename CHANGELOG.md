@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.16.2
+- Fishing: the catch % and the skill level each sit in their own column and line up down the tooltip. The header row labels them **catch** and **skill**. "your skill" is gone, and the zone rows show just the number.
+
 ## 0.16.1
 - Fishing: added **Whimsyfin**, Forever's new fish (3% of catches in Redridge Mountains, from the School of Whimsyfin).
 

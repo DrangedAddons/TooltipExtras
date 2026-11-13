@@ -101,7 +101,10 @@ local function BestLure(rank)
   return 25
 end
 
-local GREEN, YELLOW, RED, PLAIN, GREY = "ff33ff33", "ffffd100", "ffff5555", "ffe6e6e6", "ff808080"
+local GREEN, YELLOW, RED = { 0.2, 1, 0.2 }, { 1, 0.82, 0 }, { 1, 0.33, 0.33 }
+local PLAIN, GREY, HEADER = { 0.9, 0.9, 0.9 }, { 0.5, 0.5, 0.5 }, { 0.6, 0.6, 0.6 }
+-- Column widths: the widest thing each column can hold (header included).
+local COLUMNS = { { "catch", "100%" }, { "skill", "300" } }
 
 ns.AddModule({
   key = "fishing",
@@ -129,34 +132,30 @@ ns.AddModule({
     tooltip:AddLine(" ")
     local head = ns.ProfessionTag("Fishing") .. (showZones and "best zones" or "")
     if showZones and fish.classic then head = head .. " |cff808080(classic data)|r" end
-    if rank then
-      tooltip:AddDoubleLine(head, "your skill " .. (rank + modifier), 1, 0.82, 0, 0.6, 0.6, 0.6)
-    else
-      tooltip:AddLine(head, 1, 0.82, 0)
-    end
 
-    if showZones then
-      if not fish.zones then
-        tooltip:AddLine("  No Forever catch data yet", 0.5, 0.5, 0.5)
-      else
-        local season = fish.season and (" (" .. fish.season .. ")") or ""
-        for _, entry in ipairs(fish.zones) do
-          local z = ZONES[entry[1]]
-          if z then
-            local need = z[2]
-            local c = need and PLAIN or GREY
-            if rank and need then
-              local skill = rank + modifier
-              if skill >= need then c = GREEN
-              elseif skill + BestLure(rank) >= need then c = YELLOW
-              else c = RED end
-            end
-            local pct = entry[2] and (entry[2] .. "%    ") or ""
-            local right = pct .. "|c" .. c .. "skill " .. (need or "?") .. "|r"
-            tooltip:AddDoubleLine("  " .. z[1] .. season, right, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9)
+    if showZones and fish.zones then
+      -- Header labels the two columns; every row uses the same samples so the % and the skill
+      -- each right-align to a fixed edge.
+      ns.TextLine(tooltip, head, { "catch", "skill" }, COLUMNS, 1, 0.82, 0, { HEADER, HEADER })
+      local season = fish.season and (" (" .. fish.season .. ")") or ""
+      for _, entry in ipairs(fish.zones) do
+        local z = ZONES[entry[1]]
+        if z then
+          local need = z[2]
+          local c = need and PLAIN or GREY
+          if rank and need then
+            local skill = rank + modifier
+            if skill >= need then c = GREEN
+            elseif skill + BestLure(rank) >= need then c = YELLOW
+            else c = RED end
           end
+          ns.TextLine(tooltip, "  " .. z[1] .. season,
+            { entry[2] and (entry[2] .. "%") or "", tostring(need or "?") },
+            COLUMNS, 0.9, 0.9, 0.9, { PLAIN, c })
         end
       end
+    else
+      tooltip:AddLine(head, 1, 0.82, 0)
     end
     if showSchool then
       tooltip:AddLine("  Schools: " .. fish.school, 0.41, 0.8, 0.94)

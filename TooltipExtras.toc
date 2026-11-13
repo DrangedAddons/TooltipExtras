@@ -2,7 +2,7 @@
 ## Title: TooltipExtras
 ## Notes: Profit lines on item tooltips, per profession: essence combine/split (Enchanting), ore to bar (Mining), cloth to bolt (Tailoring), leather upgrades and cured hides (Leatherworking), stone to blasting powder (Engineering), stone to grinding stone (Blacksmithing); best zones and schools for raw fish (Fishing); Darkmoon Faire ticket hand-ins ranked by cost; Green Hills of Stranglethorn page costs; Runecloth to each rep standing at cloth quartermasters; what mage Comprehension scrolls decipher into. Prices from Auctionator.
 ## Author: Dranged
-## Version: 0.16.1
+## Version: 0.16.2
 ## X-DrangedAddons-Games: _forever_
 ## OptionalDeps: Auctionator
 ## SavedVariables: TooltipExtrasDB

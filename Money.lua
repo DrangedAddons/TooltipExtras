@@ -163,6 +163,47 @@ function ns.MoneyLine(tooltip, left, amounts, goldDigits, lr, lg, lb, r, g, b)
   end
 end
 
+-- Text columns on the same overlay: each column is as wide as the widest of its sample strings
+-- and its text is right-aligned in it, so values line up down the tooltip. Pass the same
+-- samples on every line that should line up.
+--   ns.TextLine(tooltip, left, { text, ... }, { { sample, ... }, ... }, lr, lg, lb, { {r,g,b}, ... })
+local function TextLayout(samples)
+  local font, size, flags = GameTooltipText:GetFont()
+  size = math.floor(size + 0.5)
+  if not measure then
+    measure = UIParent:CreateFontString(nil, "OVERLAY")
+    measure:Hide()
+  end
+  measure:SetFont(font, size, flags)
+  local cols, total = {}, 0
+  for c, list in ipairs(samples) do
+    local w = 0
+    for _, s in ipairs(list) do
+      measure:SetText(s)
+      w = math.max(w, measure:GetStringWidth())
+    end
+    cols[c] = { width = math.ceil(w) + 1 }
+    total = total + cols[c].width + (c > 1 and COLSEP or 0)
+  end
+  return { font = font, size = size, flags = flags, cols = cols, total = total }
+end
+
+function ns.TextLine(tooltip, left, texts, samples, lr, lg, lb, colors)
+  local L = TextLayout(samples)
+  local o = PlaceLine(tooltip, left, L, lr, lg, lb)
+  if not o then return end
+  for c in ipairs(L.cols) do
+    local label = o.cols[c].label
+    local color = colors and colors[c] or { 1, 1, 1 }
+    label:ClearAllPoints()
+    label:SetFont(L.font, L.size, L.flags)
+    label:SetPoint("RIGHT", o.cols[c].anchor, "RIGHT", 0, 0)
+    label:SetText(texts[c] or "")
+    label:SetTextColor(color[1], color[2], color[3])
+    label:Show()
+  end
+end
+
 function ns.MoneyHeader(tooltip, left, labels, goldDigits, r, g, b)
   local L = Layout(goldDigits)
   local o = PlaceLine(tooltip, left, L, r, g, b)
