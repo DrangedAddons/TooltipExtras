@@ -1,14 +1,15 @@
--- Fishing (WoW Forever): on a raw fish, the best zones to catch it with each zone's skill, the
--- skill coloured by whether yours catches it there (green), only with a lure (yellow) or not
--- even then (red), plus the school (pool) it comes from when there is one.
--- Zones and their order come from Wowhead Forever's "Fished in" data (Nov 2026): zones ranked by
--- catches / zone samples, zones with under 3000 samples or under a tenth of the best zone's rate
--- dropped. Zone skill is the skill that stops fish getting away, from the classic zone table,
--- which matches Wowhead's Forever fishing guide (starter 25, cities 75, STV/Dustwallow 225,
--- Tanaris 300).
+-- Fishing (WoW Forever): on a raw fish, the best zones to catch it, with the fish's share of all
+-- catches in each zone and the zone's fishing skill. The skill is coloured by whether yours
+-- catches it there (green), only with a lure (yellow) or not even then (red). Fish that come
+-- from schools (pools) name the school.
+-- Catch share = the fish's count / every catch in the zone's fishing loot table on Wowhead
+-- Forever (read Nov 2026). Zones with under 200 recorded catches are left out, then up to 3
+-- zones, best first, dropping any under a quarter of the best zone's share.
+-- Zone skill is the skill that stops fish getting away, from the classic zone table, which
+-- matches Wowhead's Forever fishing guide (starter 25, cities 75, STV/Dustwallow 225, Tanaris
+-- 300). nil = not known (new Forever zones).
 local ADDON, ns = ...
 
--- Skill that catches every fish (no getaways).
 local ZONES = {
   [1] = { "Dun Morogh", 25 },        [12] = { "Elwynn Forest", 25 },
   [14] = { "Durotar", 25 },          [85] = { "Tirisfal Glades", 25 },
@@ -26,42 +27,50 @@ local ZONES = {
   [33] = { "Stranglethorn Vale", 225 }, [36] = { "Alterac Mountains", 225 },
   [45] = { "Arathi Highlands", 225 }, [400] = { "Thousand Needles", 225 },
   [405] = { "Desolace", 225 },
-  [16] = { "Azshara", 300 },         [47] = { "The Hinterlands", 300 },
-  [357] = { "Feralas", 300 },        [440] = { "Tanaris", 300 },
-  [28] = { "Western Plaguelands", 300 }, [493] = { "Moonglade", 300 },
+  [16] = { "Azshara", 300 },         [357] = { "Feralas", 300 },
+  [440] = { "Tanaris", 300 },        [28] = { "Western Plaguelands", 300 },
+  [493] = { "Moonglade", 300 },
+  [16591] = { "Riverglades" },       [16593] = { "Zephras Isle" },
+  -- only in the classic fallback rows; skill not confirmed for Forever
+  [41] = { "Deadwind Pass" },        [618] = { "Winterspring" },
+  [139] = { "Eastern Plaguelands" },
 }
 
--- itemID -> { zones = { zoneID, ... } best first, school = pool name, season = note }
+-- itemID -> { zones = { { zoneID, catch % }, ... } best first, school = pool name, season }
 -- zones = false: Wowhead Forever has no catch data for it yet.
 local FISH = {
-  [6291] = { zones = { 85, 1, 12 } },                 -- Raw Brilliant Smallfish
-  [6303] = { zones = { 141, 14, 148 } },              -- Raw Slitherskin Mackerel
-  [6289] = { zones = { 1638, 85, 1657 } },            -- Raw Longjaw Mud Snapper
-  [6308] = { zones = { 44, 10, 406 } },               -- Raw Bristle Whisker Catfish
-  [6317] = { zones = { 38 } },                        -- Raw Loch Frenzy
-  [6361] = { zones = { 148, 130, 40 } },              -- Raw Rainbow Fin Albacore
-  [6358] = { zones = { 40, 148, 130 }, school = "Oily Blackmouth School" },
-  [6359] = { zones = { 406, 267, 11 }, school = "Firefin Snapper School" },
-  [6522] = { zones = { 17 }, school = "School of Deviate Fish" },
-  [21071] = { zones = { 267, 38, 130 }, school = "Sagefish School" },
-  [21153] = { zones = { 36, 33 }, school = "Greater Sagefish School" },
-  [6362] = { zones = { 33, 15, 45 } },                -- Raw Rockscale Cod
-  [4603] = { zones = { 33, 440, 15 } },               -- Raw Spotted Yellowtail
-  [8365] = { zones = { 400, 45, 36 } },               -- Raw Mithril Head Trout
-  [7973] = { zones = { 440 } },                       -- Big-mouth Clam
-  [13422] = { zones = { 440, 33 } },                  -- Stonescale Eel
-  [13754] = { zones = { 440 } },                      -- Raw Glossy Mightfish
-  [13755] = { zones = { 440 }, season = "winter" },   -- Raw Winter Squid
-  [13756] = { zones = { 440 }, season = "summer" },   -- Raw Summer Bass (Wowhead guide)
-  [13757] = { zones = { 357, 493, 28 } },             -- Lightning Eel
-  [13758] = { zones = { 493, 357, 28 } },             -- Raw Redgill
-  [13759] = { zones = { 493, 357, 28 } },             -- Raw Nightfin Snapper
-  [13760] = { zones = { 357, 493, 28 } },             -- Raw Sunscale Salmon
-  [13889] = { zones = false },                        -- Raw Whitescale Salmon
-  [8959] = { zones = false },                         -- Raw Spinefin Halibut
-  [13888] = { zones = false },                        -- Darkclaw Lobster
-  [13893] = { zones = false },                        -- Large Raw Mightfish
+  [6291] = { zones = { { 12, 60 }, { 1, 60 }, { 16593, 59 } } },       -- Raw Brilliant Smallfish
+  [6303] = { zones = { { 14, 52 }, { 141, 48 }, { 17, 14 } } },        -- Raw Slitherskin Mackerel
+  [6289] = { zones = { { 1657, 60 }, { 1638, 60 }, { 1637, 60 } } },   -- Raw Longjaw Mud Snapper
+  [6308] = { zones = { { 10, 59 }, { 44, 55 }, { 406, 43 } } },        -- Raw Bristle Whisker Catfish
+  [6317] = { zones = { { 38, 21 } } },                                 -- Raw Loch Frenzy
+  [6361] = { zones = { { 11, 39 }, { 17, 21 }, { 148, 18 } } },        -- Raw Rainbow Fin Albacore
+  [12238] = { zones = { { 148, 29 } } },                               -- Darkshore Grouper
+  [6358] = { zones = { { 40, 30 }, { 11, 21 }, { 17, 20 } }, school = "Oily Blackmouth School" },
+  [6359] = { zones = { { 11, 18 }, { 33, 11 }, { 440, 11 } }, school = "Firefin Snapper School" },
+  [6522] = { zones = { { 17, 16 } }, school = "School of Deviate Fish" },
+  [21071] = { zones = { { 267, 34 }, { 38, 20 }, { 406, 14 } }, school = "Sagefish School" },
+  [21153] = { zones = { { 36, 37 }, { 16591, 16 } }, school = "Greater Sagefish School" },
+  [6362] = { zones = { { 8, 42 }, { 33, 34 }, { 15, 25 } } },          -- Raw Rockscale Cod
+  [4603] = { zones = { { 440, 35 }, { 16, 23 }, { 33, 12 } } },        -- Raw Spotted Yellowtail
+  [8365] = { zones = { { 400, 61 }, { 45, 53 }, { 405, 51 } } },       -- Raw Mithril Head Trout
+  [7973] = { zones = { { 440, 9 }, { 16, 4 } } },                      -- Big-mouth Clam
+  [13422] = { zones = { { 440, 12 }, { 16591, 11 }, { 16, 5 } } },     -- Stonescale Eel
+  [13754] = { zones = { { 440, 8 }, { 16, 6 } } },                     -- Raw Glossy Mightfish
+  [13755] = { zones = { { 440, 9 }, { 16, 7 } }, season = "winter" },  -- Raw Winter Squid
+  -- No Forever catch data yet: classic Wowhead's item catch rates (classic = true). Summer Bass
+  -- keeps Tanaris, which the Forever fishing guide names, though classic's share is diluted
+  -- by out-of-season casts.
+  [13756] = { zones = { { 139, 20 }, { 440, 2 } }, season = "summer", classic = true },
+  [13889] = { zones = { { 41, 40 }, { 618, 39 }, { 139, 37 } }, classic = true }, -- Whitescale Salmon
+  [13888] = { zones = { { 139, 45 }, { 16, 26 } }, classic = true },   -- Darkclaw Lobster
+  [13893] = { zones = { { 139, 8 }, { 16, 5 } }, classic = true },     -- Large Raw Mightfish
+  [13757] = { zones = { { 357, 5 }, { 28, 4 }, { 493, 3 } } },         -- Lightning Eel
+  [13758] = { zones = { { 28, 56 }, { 493, 45 }, { 357, 38 } } },      -- Raw Redgill
+  [13759] = { zones = { { 493, 20 }, { 28, 10 }, { 357, 8 } } },       -- Raw Nightfin Snapper
+  [13760] = { zones = { { 357, 15 }, { 28, 14 }, { 493, 11 } } },      -- Raw Sunscale Salmon
 }
+-- Raw Spinefin Halibut (8959) is left out: a mob drop in classic, no catches in Forever.
 
 -- Fishing rank and bonus (pole, gear, active lure), or nil when not learned.
 local function FishingSkill()
@@ -91,21 +100,19 @@ local function BestLure(rank)
   return 25
 end
 
-local GREEN = { 0.2, 1, 0.2 }
-local YELLOW = { 1, 0.82, 0 }
-local RED = { 1, 0.33, 0.33 }
-local PLAIN = { 0.9, 0.9, 0.9 }
+local GREEN, YELLOW, RED, PLAIN, GREY = "ff33ff33", "ffffd100", "ffff5555", "ffe6e6e6", "ff808080"
 
 ns.AddModule({
   key = "fishing",
   category = "professions",
   label = "Fishing",
-  tip = "On a raw fish: the best zones to catch it, the school (pool) it comes from, and the "
-    .. "fishing skill each zone needs. Green: you catch it there. Yellow: only with a lure. "
-    .. "Red: not even with a lure.",
+  tip = "On a raw fish: the best zones to catch it, with its share of all catches there, the "
+    .. "fishing skill each zone needs, and the school (pool) it comes from. The skill is green "
+    .. "when you catch it there, yellow when you need a lure, red when not even then.",
   options = {
-    { key = "zones", label = "Best zones", default = true },
-    { key = "colour", label = "Colour zones by your skill", default = true,
+    { key = "zones", label = "Best zones and catch %", default = true,
+      tip = "Catch % is the fish's share of everything caught in that zone, from Wowhead Forever's data." },
+    { key = "colour", label = "Colour the skill by yours", default = true,
       tip = "Green, yellow (needs a lure) or red (out of reach), using your fishing skill with your pole and gear." },
     { key = "school", label = "Fishing schools", default = true },
   },
@@ -120,6 +127,7 @@ ns.AddModule({
 
     tooltip:AddLine(" ")
     local head = ns.ProfessionTag("Fishing") .. (showZones and "best zones" or "")
+    if showZones and fish.classic then head = head .. " |cff808080(classic data)|r" end
     if rank then
       tooltip:AddDoubleLine(head, "your skill " .. (rank + modifier), 1, 0.82, 0, 0.6, 0.6, 0.6)
     else
@@ -131,18 +139,20 @@ ns.AddModule({
         tooltip:AddLine("  No Forever catch data yet", 0.5, 0.5, 0.5)
       else
         local season = fish.season and (" (" .. fish.season .. ")") or ""
-        for _, zid in ipairs(fish.zones) do
-          local z = ZONES[zid]
+        for _, entry in ipairs(fish.zones) do
+          local z = ZONES[entry[1]]
           if z then
-            local c = PLAIN
-            if rank then
+            local need = z[2]
+            local c = need and PLAIN or GREY
+            if rank and need then
               local skill = rank + modifier
-              if skill >= z[2] then c = GREEN
-              elseif skill + BestLure(rank) >= z[2] then c = YELLOW
+              if skill >= need then c = GREEN
+              elseif skill + BestLure(rank) >= need then c = YELLOW
               else c = RED end
             end
-            -- zone name stays plain; only the skill is coloured
-            tooltip:AddDoubleLine("  " .. z[1] .. season, "skill " .. z[2], 0.9, 0.9, 0.9, c[1], c[2], c[3])
+            local pct = entry[2] and (entry[2] .. "%    ") or ""
+            local right = pct .. "|c" .. c .. "skill " .. (need or "?") .. "|r"
+            tooltip:AddDoubleLine("  " .. z[1] .. season, right, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9)
           end
         end
       end

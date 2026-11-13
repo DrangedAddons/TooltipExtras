@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.16.0
+- Fishing: each zone now shows the fish's **catch %**, its share of everything caught in that zone (from Wowhead Forever's zone fishing tables), e.g. Raw Sagefish: Hillsbrad Foothills 34%, Loch Modan 20%, Stonetalon Mountains 14%. Up to 3 zones, best first. Zones under a quarter of the best one's share, or with under 200 recorded catches, are left out.
+- Fishing: added Darkshore Grouper (29% in Darkshore) and the new Forever zones Riverglades and Zephras Isle (their skill shows as "?" until known).
+- Fishing: Whitescale Salmon, Darkclaw Lobster, Large Raw Mightfish and Summer Bass have no Forever catches yet, so they use classic's rates and say "(classic data)". Spinefin Halibut is gone from the list (it's a mob drop, not a catch).
+
 ## 0.15.1
 - Fishing: zone names stay white. Only the skill level is coloured green, yellow or red.
 
