@@ -121,14 +121,20 @@ local function OnLine(tooltip, line)
     return
   end
   local rest = text:match("^" .. PREFIX:gsub("%p", "%%%0") .. "%s*(.*)$")
-  if not rest or not Enabled() then return end
+  if not rest then return end
+  ns.Debug("reagent line found, enabled:", Enabled(), "list:", rest:sub(1, 40))
+  if not Enabled() then return end
   if rest == "" then
     pending[tooltip] = true -- the list is on the next line
     return true
   end
   list = Parse(rest)
-  if not list then return end
+  if not list then
+    ns.Debug("a reagent name isn't in RecipeData.lua, leaving the line alone")
+    return
+  end
   Draw(tooltip, list)
+  ns.Debug("drew", #list, "reagents")
   return true
 end
 
@@ -136,12 +142,21 @@ if TooltipDataProcessor and TooltipDataProcessor.AddLinePreCall then
   -- Line hooks fire per line type, and the reagent line is a plain line (type 0, None).
   -- AllTypes only works for whole-tooltip hooks.
   local lineType = Enum and Enum.TooltipDataLineType and Enum.TooltipDataLineType.None or 0
-  if lineType ~= nil then
-    TooltipDataProcessor.AddLinePreCall(lineType, function(tooltip, line)
-      local ok, skip = pcall(OnLine, tooltip, line)
-      return ok and skip or nil
-    end)
-  end
+  local warned = false
+  TooltipDataProcessor.AddLinePreCall(lineType, function(tooltip, line)
+    if tooltip == ItemRefTooltip then
+      ns.Debug("line hook:", line and line.type, line and type(line.leftText) == "string" and line.leftText:sub(1, 30))
+    end
+    local ok, skip = pcall(OnLine, tooltip, line)
+    if not ok and not warned then
+      warned = true
+      print("|cff33ff99TooltipExtras|r: recipe reagents failed: " .. tostring(skip))
+    end
+    return ok and skip or nil
+  end)
+  ItemRefTooltip:HookScript("OnShow", function(self)
+    ns.Debug("ItemRefTooltip shown,", self:NumLines(), "lines")
+  end)
   -- A header with no list after it must not carry over to the next tooltip.
   for _, tip in ipairs({ ItemRefTooltip }) do
     tip:HookScript("OnHide", function(self) pending[self] = nil end)

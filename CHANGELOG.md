@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.18.3
+- `/tte debug` turns on chat output for tracking down problems: what the recipe reagent hook sees on a linked recipe, and why it does or doesn't draw. If the reagent list hits an error, it's now printed once instead of failing silently.
+
 ## 0.18.2
 - Recipe reagents: fixed the priced list never showing. The tooltip line hook was registered for every type instead of the plain line type the Reagents line uses, and the "Reagents:" match is more forgiving.
 

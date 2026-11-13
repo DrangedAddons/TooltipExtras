@@ -212,6 +212,19 @@ end)
 
 SLASH_TOOLTIPEXTRAS1 = "/tooltipextras"
 SLASH_TOOLTIPEXTRAS2 = "/tte"
-SlashCmdList.TOOLTIPEXTRAS = function() ns.OpenOptions() end
+-- /tte debug toggles chat output from ns.Debug (session only).
+function ns.Debug(...)
+  if ns.debug then print("|cff33ff99TTE debug|r", ...) end
+end
+
+SlashCmdList.TOOLTIPEXTRAS = function(msg)
+  if (msg or ""):lower():match("^%s*debug") then
+    ns.debug = not ns.debug
+    print("|cff33ff99TooltipExtras|r debug " .. (ns.debug and "on" or "off")
+      .. ". Line hook API: " .. tostring(TooltipDataProcessor and TooltipDataProcessor.AddLinePreCall ~= nil))
+    return
+  end
+  ns.OpenOptions()
+end
 
 function TooltipExtras_OnCompartmentClick() ns.OpenOptions() end
