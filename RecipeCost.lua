@@ -1,4 +1,4 @@
--- Recipe links, every profession: swaps the tooltip's "Reagents:" line for a priced list, one
+-- Recipe links in chat (clicked, or hovered via ChatHover.lua), every profession: swaps the tooltip's "Reagents:" line for a priced list, one
 -- row per reagent with the price each and the cost for the recipe's count, then the total.
 -- Prices are the cheaper of AH and vendor (ns.BuyPrice). Reagents you don't have enough of are
 -- red.
@@ -139,7 +139,9 @@ local function Enabled()
 end
 
 local function OurTooltip(tooltip)
-  return tooltip == ItemRefTooltip -- chat links only, not hovers or the profession window
+  -- chat links only (clicked, or hovered with the Chat links module), not bag or
+  -- profession-window hovers
+  return tooltip == ItemRefTooltip or (ns.IsChatHover and ns.IsChatHover(tooltip))
 end
 
 -- tooltip -> true while the line after a bare "Reagents:" header should hold the list
@@ -185,7 +187,7 @@ if TooltipDataProcessor and TooltipDataProcessor.AddLinePreCall then
   local lineType = Enum and Enum.TooltipDataLineType and Enum.TooltipDataLineType.None or 0
   local warned = false
   TooltipDataProcessor.AddLinePreCall(lineType, function(tooltip, line)
-    if tooltip == ItemRefTooltip then
+    if OurTooltip(tooltip) then
       ns.Debug("line hook:", line and line.type, line and type(line.leftText) == "string" and line.leftText:sub(1, 30))
     end
     local ok, skip = pcall(OnLine, tooltip, line)
@@ -199,7 +201,7 @@ if TooltipDataProcessor and TooltipDataProcessor.AddLinePreCall then
     ns.Debug("ItemRefTooltip shown,", self:NumLines(), "lines")
   end)
   -- A header with no list after it must not carry over to the next tooltip.
-  for _, tip in ipairs({ ItemRefTooltip }) do
+  for _, tip in ipairs({ ItemRefTooltip, GameTooltip }) do
     tip:HookScript("OnHide", function(self) pending[self] = nil end)
   end
   if TooltipDataProcessor.AddTooltipPostCall and TooltipDataProcessor.AllTypes then

@@ -25,6 +25,9 @@ Profit is green, loss is red. It takes off the 5% auction house cut by default (
 
 - **Mage scrolls:** untranslated Comprehension scrolls list what they can decipher into (random within the scroll's tier).
 
+## Other
+- **Chat links:** hover a link in chat (item, recipe, spell, quest, achievement, currency) to see its tooltip without clicking. Recipe reagent lists show on these hovers too.
+
 ## Using it
 `/tte` (or `/tooltipextras`), the addon list button or Options > AddOns > TooltipExtras opens the settings. Settings are account-wide.
 

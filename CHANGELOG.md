@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.19.0
+- **Chat links** (new, under Other): hover an item, recipe, spell, quest, achievement or currency link in chat to see its tooltip without clicking. Starts ticked. Recipe reagent lists show on these hovers too; bag and profession-window hovers still keep the game's Reagents line.
+- New file: restart the game client once (a /reload won't load it).
+
 ## 0.18.8
 - Settings: the category notes wrap inside their column, so the Professions note no longer runs into Events. The Professions note is shorter too.
 - Settings: **Recipe reagents** sits under its own **All professions** sub-heading below the professions, since it works on every profession's recipes rather than being one.
