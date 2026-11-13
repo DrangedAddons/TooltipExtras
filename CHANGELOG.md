@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.21.1
+- No change in game. The disenchant table can now be checked against fresh Wowhead Forever counts and updated with `tools/disenchant` (see its README). The first check, 2026-11-14, found no rows that needed changing.
+
 ## 0.21.0
 - Auctionator's **Disenchant** line, under Vendor and Auction, now shows the expected disenchant value on Forever gear. Auctionator only knows Warlords of Draenor and later gear, so TooltipExtras fills it in when Auctionator has none. Auctionator's files aren't touched. It follows the Enchanting **Disenchant value** tick box and needs Auctionator's "Show estimated disenchant item value" setting on.
 - **Best way to sell** (new, under Other, starts ticked): of Auctionator's Vendor, Auction and Disenchant lines, the one worth the most turns green. Auction and disenchant count the 5% auction house cut when that setting is on, since vendoring has none.

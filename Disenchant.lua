@@ -11,7 +11,9 @@
 local ADDON, ns = ...
 
 -- DE[kind][quality] = { { lowLevel, highLevel, { itemID, chance %, minQty, maxQty, avgQty }, ... } }
+-- Between the DATA markers, tools/disenchant/build.py rewrites the rows; see tools/disenchant/README.md.
 local DE = {
+-- BEGIN DATA
   armor = {
     [2] = {
       { 5, 15, { 10940, 80, 1, 2, 1.5 }, { 10938, 20, 1, 2, 1.5 } },
@@ -76,6 +78,7 @@ local DE = {
       { 61, 99, { 20725, 100, 1, 2, 1.5 } },
     },
   },
+-- END DATA
 }
 
 -- Essences combine 3 lesser = 1 greater, so each is worth at least its share of the other.
