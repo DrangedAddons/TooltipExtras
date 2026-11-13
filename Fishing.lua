@@ -1,6 +1,6 @@
--- Fishing (WoW Forever): on a raw fish, the best zones to catch it, coloured by whether your
--- fishing skill catches it there (green), only with a lure (yellow) or not even then (red),
--- plus the school (pool) it comes from when there is one.
+-- Fishing (WoW Forever): on a raw fish, the best zones to catch it with each zone's skill, the
+-- skill coloured by whether yours catches it there (green), only with a lure (yellow) or not
+-- even then (red), plus the school (pool) it comes from when there is one.
 -- Zones and their order come from Wowhead Forever's "Fished in" data (Nov 2026): zones ranked by
 -- catches / zone samples, zones with under 3000 samples or under a tenth of the best zone's rate
 -- dropped. Zone skill is the skill that stops fish getting away, from the classic zone table,
@@ -141,7 +141,8 @@ ns.AddModule({
               elseif skill + BestLure(rank) >= z[2] then c = YELLOW
               else c = RED end
             end
-            tooltip:AddDoubleLine("  " .. z[1] .. season, "skill " .. z[2], c[1], c[2], c[3], c[1], c[2], c[3])
+            -- zone name stays plain; only the skill is coloured
+            tooltip:AddDoubleLine("  " .. z[1] .. season, "skill " .. z[2], 0.9, 0.9, 0.9, c[1], c[2], c[3])
           end
         end
       end
