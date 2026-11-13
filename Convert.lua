@@ -43,6 +43,7 @@ function ns.AddConverter(c)
   ns.AddModule({
     key = c.key,
     label = c.label,
+    category = c.category or "professions",
     tip = c.tip,
     OnItem = function(tooltip, id)
       local r = byInput[id]

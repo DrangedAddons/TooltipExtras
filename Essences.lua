@@ -23,6 +23,7 @@ end
 
 ns.AddModule({
   key = "essences",
+  category = "professions",
   label = "Enchanting",
   tip = "Essences. On a lesser: the profit from combining 3 into a greater. "
     .. "On a greater: the profit from splitting it into 3 lessers.",

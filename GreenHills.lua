@@ -29,6 +29,7 @@ end
 
 ns.AddModule({
   key = "greenhills",
+  category = "quests",
   label = "Green Hills of Stranglethorn",
   tip = "Hover Barnil Stonepot in Booty Bay: what each chapter costs if you buy the pages you don't "
     .. "have off the auction house, and the total.",

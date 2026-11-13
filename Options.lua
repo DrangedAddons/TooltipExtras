@@ -1,5 +1,6 @@
--- Options > AddOns > TooltipExtras: shared settings at the top, then a tick box per profession
--- (one per module) with that module's own options indented under it.
+-- Options > AddOns > TooltipExtras: shared settings at the top, then a tick box per module grouped
+-- under category headings (Professions on the left; Events, Quests, Reputation on the right), with
+-- each module's own options indented under it.
 local ADDON, ns = ...
 
 local panel = CreateFrame("Frame")
@@ -43,9 +44,9 @@ local function Check(x, y, label, tip, get, set, isHeader, enabledIf)
   return cb
 end
 
-local function Heading(y, text, note)
+local function Heading(y, text, note, x)
   local h = panel:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-  h:SetPoint("TOPLEFT", 16, y)
+  h:SetPoint("TOPLEFT", x or 16, y)
   h:SetText(text)
   if note then
     local n = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
@@ -74,21 +75,42 @@ local function Build()
     function(v) ns.GeneralDB().ahCut = v end)
   y = y - 40
 
-  y = Heading(y, "Professions and events", "Tick the ones you want tooltip lines for.")
-  local sorted = {}
-  for _, m in ipairs(ns.modules) do sorted[#sorted + 1] = m end
-  table.sort(sorted, function(a, b) return a.label < b.label end)
-  for _, m in ipairs(sorted) do
-    Check(16, y, m.label, m.tip,
-      function() return ns.ModuleDB(m).enabled end,
-      function(v) ns.ModuleDB(m).enabled = v end, true)
-    y = y - 28
-    for _, o in ipairs(m.options or {}) do
-      Check(40, y, o.label, o.tip,
-        function() return ns.ModuleDB(m)[o.key] end,
-        function(v) ns.ModuleDB(m)[o.key] = v end, false,
-        function() return ns.ModuleDB(m).enabled end)
-      y = y - 26
+  -- Modules grouped by category: Professions down the left, the rest down the right.
+  -- { key, heading, note, column }
+  local CATEGORIES = {
+    { "professions", "Professions", "Crafting profit on ore, cloth, leather, stone and essences.", 1 },
+    { "events", "Events", "Darkmoon Faire turn-ins, ticket vendor and Sayge.", 2 },
+    { "quests", "Quests", "Item turn-in quest costs.", 2 },
+    { "reputation", "Reputation", "Cloth turn-ins to each standing.", 2 },
+    { "other", "Other", nil, 2 },
+  }
+  local COLUMN_X = { 16, 340 }
+  local top = y
+  local colY = { top, top }
+  for _, cat in ipairs(CATEGORIES) do
+    local list = {}
+    for _, m in ipairs(ns.modules) do
+      if (m.category or "other") == cat[1] then list[#list + 1] = m end
+    end
+    if #list > 0 then
+      table.sort(list, function(a, b) return a.label < b.label end)
+      local col = cat[4]
+      local x = COLUMN_X[col]
+      local cy = Heading(colY[col], cat[2], cat[3], x)
+      for _, m in ipairs(list) do
+        Check(x, cy, m.label, m.tip,
+          function() return ns.ModuleDB(m).enabled end,
+          function(v) ns.ModuleDB(m).enabled = v end, true)
+        cy = cy - 28
+        for _, o in ipairs(m.options or {}) do
+          Check(x + 24, cy, o.label, o.tip,
+            function() return ns.ModuleDB(m)[o.key] end,
+            function(v) ns.ModuleDB(m)[o.key] = v end, false,
+            function() return ns.ModuleDB(m).enabled end)
+          cy = cy - 26
+        end
+      end
+      colY[col] = cy - 12
     end
   end
 end

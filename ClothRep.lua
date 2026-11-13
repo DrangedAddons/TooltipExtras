@@ -55,7 +55,8 @@ end
 
 ns.AddModule({
   key = "clothrep",
-  label = "Cloth reputation",
+  category = "reputation",
+  label = "Cloth quartermasters",
   tip = "Hover a city's cloth quartermaster: how much Runecloth you need to reach each standing "
     .. "above yours with their faction, and what it costs on the auction house. Uses the "
     .. "repeatable Additional Runecloth (20 for 50 rep, +10% for Humans).",

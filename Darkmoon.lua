@@ -297,6 +297,7 @@ end
 
 ns.AddModule({
   key = "darkmoon",
+  category = "events",
   label = "Darkmoon Faire",
   tip = "Hover Yebb Neblegear, Kerri Hicks, Rinling or Chronos: their ticket quests with what each "
     .. "costs to complete, best value per ticket first, then the best hand-in at each of the other three. Hand-ins you can craft "

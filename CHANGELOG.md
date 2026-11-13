@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.12.3
+- Settings page: modules are grouped under headings. **Professions** (Blacksmithing, Enchanting, Engineering, Leatherworking, Mining, Tailoring) on the left; **Events** (Darkmoon Faire), **Quests** (Green Hills of Stranglethorn) and **Reputation** (Cloth quartermasters, renamed from Cloth reputation) on the right. Your tick choices are kept.
+
 ## 0.12.2
 - Cloth reputation: added **Belanaa Windveil**, the High Order cloth quartermaster in Dalaran. Same turn-in as the cities: Additional Runecloth, 20 Runecloth for 50 rep.
 
