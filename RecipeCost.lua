@@ -32,8 +32,10 @@ end
 -- to and including the first colon.
 local PREFIX = (type(SPELL_REAGENTS) == "string" and SPELL_REAGENTS:match("^([^:]+:)")) or "Reagents:"
 
+-- Strips colour codes and turns the "|n" line-break escape (Forever's "Reagents: |n<list>")
+-- into a real newline.
 local function Plain(text)
-  return (text:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""))
+  return (text:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub("|n", "\n"))
 end
 
 -- "Soul Dust (8), Large Glimmering Shard (6)" -> { { id, count, name }, ... }, or nil when any
