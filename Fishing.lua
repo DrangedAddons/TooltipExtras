@@ -46,6 +46,7 @@ local FISH = {
   [6317] = { zones = { { 38, 21 } } },                                 -- Raw Loch Frenzy
   [6361] = { zones = { { 11, 39 }, { 17, 21 }, { 148, 18 } } },        -- Raw Rainbow Fin Albacore
   [12238] = { zones = { { 148, 29 } } },                               -- Darkshore Grouper
+  [251524] = { zones = { { 44, 3 } }, school = "School of Whimsyfin" }, -- Whimsyfin (new in Forever)
   [6358] = { zones = { { 40, 30 }, { 11, 21 }, { 17, 20 } }, school = "Oily Blackmouth School" },
   [6359] = { zones = { { 11, 18 }, { 33, 11 }, { 440, 11 } }, school = "Firefin Snapper School" },
   [6522] = { zones = { { 17, 16 } }, school = "School of Deviate Fish" },

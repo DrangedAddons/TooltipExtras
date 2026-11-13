@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.16.1
+- Fishing: added **Whimsyfin**, Forever's new fish (3% of catches in Redridge Mountains, from the School of Whimsyfin).
+
 ## 0.16.0
 - Fishing: each zone now shows the fish's **catch %**, its share of everything caught in that zone (from Wowhead Forever's zone fishing tables), e.g. Raw Sagefish: Hillsbrad Foothills 34%, Loch Modan 20%, Stonetalon Mountains 14%. Up to 3 zones, best first. Zones under a quarter of the best one's share, or with under 200 recorded catches, are left out.
 - Fishing: added Darkshore Grouper (29% in Darkshore) and the new Forever zones Riverglades and Zephras Isle (their skill shows as "?" until known).
