@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.17.0
+- **Enchanting:** enchant links and enchanting recipes (chat links, the profession window) swap the game's "Reagents:" line for a priced list. Each reagent gets a row with its count, the price each and the cost for the recipe, then the **Total**. Prices are the cheaper of the AH and the vendor price Auctionator has seen. The coins sit in aligned columns. Reagents you don't have enough of are red, as before. If a reagent has no price, its row says so and the total says "prices missing". It's a new tick box under Enchanting and starts ticked.
+
 ## 0.16.2
 - Fishing: the catch % and the skill level each sit in their own column and line up down the tooltip. The header row labels them **catch** and **skill**. "your skill" is gone, and the zone rows show just the number.
 
