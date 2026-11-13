@@ -28,9 +28,9 @@ local function ItemByName(name)
   return byName[name:lower()]
 end
 
--- "Reagents:" from the client's own format string when it has one.
-local PREFIX = (type(SPELL_REAGENTS) == "string" and SPELL_REAGENTS:match("^(.-)%%s")) or "Reagents: "
-PREFIX = PREFIX:gsub("%s+$", "")
+-- "Reagents:" from the client's own format string ("Reagents: |n%s" or similar): everything up
+-- to and including the first colon.
+local PREFIX = (type(SPELL_REAGENTS) == "string" and SPELL_REAGENTS:match("^([^:]+:)")) or "Reagents:"
 
 local function Plain(text)
   return (text:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""))
@@ -133,8 +133,9 @@ local function OnLine(tooltip, line)
 end
 
 if TooltipDataProcessor and TooltipDataProcessor.AddLinePreCall then
-  local all = TooltipDataProcessor.AllTypes
-  local lineType = all or (Enum and Enum.TooltipDataLineType and Enum.TooltipDataLineType.None)
+  -- Line hooks fire per line type, and the reagent line is a plain line (type 0, None).
+  -- AllTypes only works for whole-tooltip hooks.
+  local lineType = Enum and Enum.TooltipDataLineType and Enum.TooltipDataLineType.None or 0
   if lineType ~= nil then
     TooltipDataProcessor.AddLinePreCall(lineType, function(tooltip, line)
       local ok, skip = pcall(OnLine, tooltip, line)

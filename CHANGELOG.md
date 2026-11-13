@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.18.2
+- Recipe reagents: fixed the priced list never showing. The tooltip line hook was registered for every type instead of the plain line type the Reagents line uses, and the "Reagents:" match is more forgiving.
+
 ## 0.18.1
 - Recipe reagents: only on recipes linked in chat. Hovered recipes and the profession window keep the game's own Reagents line.
 
