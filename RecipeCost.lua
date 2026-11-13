@@ -1,18 +1,29 @@
--- Enchanting recipe links: swaps the tooltip's "Reagents:" line for a priced list, one row per
--- reagent with the price each and the cost for the recipe's count, then the total. Prices are
--- the cheaper of AH and vendor (ns.BuyPrice). Reagents you don't have enough of are red.
+-- Recipe links, every profession: swaps the tooltip's "Reagents:" line for a priced list, one
+-- row per reagent with the price each and the cost for the recipe's count, then the total.
+-- Prices are the cheaper of AH and vendor (ns.BuyPrice). Reagents you don't have enough of are
+-- red.
 --
 -- It reads the names and counts off the "Reagents:" line itself and maps the names to item IDs
--- with EnchantData.lua, so it works on any enchanting recipe tooltip (chat links, the
--- profession window) without knowing the spell. A line pre-call draws the list in the line's
--- place and skips the line. If a name isn't known, the default line is left alone.
+-- with RecipeData.lua, so it works on any recipe tooltip (chat links, the profession window)
+-- without knowing the spell. A line pre-call draws the list in the line's place and skips the
+-- line. If a name isn't known, the default line is left alone.
 local ADDON, ns = ...
+
+local MODULE = {
+  key = "recipecost",
+  category = "professions",
+  label = "Recipe reagents",
+  tip = "On a recipe link or in the profession window, for every profession: the Reagents line "
+    .. "becomes a priced list, each reagent's price and cost, and the total.",
+  options = { { key = "list", label = "Priced reagent list", default = true } },
+}
+ns.AddModule(MODULE)
 
 local byName -- lower-case reagent name -> item ID
 local function ItemByName(name)
   if not byName then
     byName = {}
-    for id, n in pairs(ns.EnchantReagents or {}) do byName[n:lower()] = id end
+    for id, n in pairs(ns.RecipeReagents or {}) do byName[n:lower()] = id end
   end
   return byName[name:lower()]
 end
@@ -82,13 +93,8 @@ local function Draw(tooltip, reagents)
 end
 
 local function Enabled()
-  for _, m in ipairs(ns.modules) do
-    if m.key == "essences" then
-      local db = ns.ModuleDB(m)
-      return db.enabled and db.reagents ~= false
-    end
-  end
-  return false
+  local db = ns.ModuleDB(MODULE)
+  return db.enabled and db.list ~= false
 end
 
 local function OurTooltip(tooltip)

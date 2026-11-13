@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.18.0
+- **Recipe reagents:** the priced reagent list now works for every profession, not just Enchanting: Alchemy, Blacksmithing, Cooking, Enchanting, Engineering, First Aid, Leatherworking, Mining and Tailoring (522 reagents from CraftRoute's Forever data). It has its own row under Professions, **Recipe reagents**, and starts ticked. The tick box under Enchanting from 0.17.0 is gone.
+
 ## 0.17.0
 - **Enchanting:** enchant links and enchanting recipes (chat links, the profession window) swap the game's "Reagents:" line for a priced list. Each reagent gets a row with its count, the price each and the cost for the recipe, then the **Total**. Prices are the cheaper of the AH and the vendor price Auctionator has seen. The coins sit in aligned columns. Reagents you don't have enough of are red, as before. If a reagent has no price, its row says so and the total says "prices missing". It's a new tick box under Enchanting and starts ticked.
 

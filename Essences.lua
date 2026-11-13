@@ -24,14 +24,10 @@ end
 ns.AddModule({
   key = "essences",
   category = "professions",
-  options = {
-    { key = "swap", label = "Essence combine and split", default = true },
-    { key = "reagents", label = "Reagent costs on enchant recipes", default = true,
-      tip = "Enchant links and recipes: the Reagents line becomes a priced list with the total (EnchantCost.lua)." },
-  },
+  options = { { key = "swap", label = "Essence combine and split", default = true } },
   label = "Enchanting",
-  tip = "Essences: on a lesser, the profit from combining 3 into a greater; on a greater, the "
-    .. "profit from splitting it into 3 lessers. Enchant links and recipes: what the reagents cost.",
+  tip = "Essences. On a lesser: the profit from combining 3 into a greater. "
+    .. "On a greater: the profit from splitting it into 3 lessers.",
   OnItem = function(tooltip, id, db)
     if db.swap == false then return false end
     local e = byItem[id]
