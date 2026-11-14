@@ -11,6 +11,11 @@
 --
 -- Marks are kept by bag and slot, with the item ID, and dropped when that slot's item changes.
 -- Bank slots can only be read while the bank is open, so bank marks drop when it closes.
+--
+-- EllesmereUI's saved view (your bank, an alt's bags or bank, looked at away from the bank) draws
+-- display-only buttons with no bag or slot, just the saved item string (btn.str) and the stack
+-- size on btn.Count. Marks there are snapshots of that item and stack, kept by button; the
+-- buttons are found the first time one shows a tooltip, along with the others beside it.
 local ADDON, ns = ...
 local UI = ns.UI
 ns.Print = ns.Print or function(...) print("|cff33ff99TooltipExtras|r:", ...) end
@@ -28,7 +33,9 @@ ns.AddModule(MODULE)
 
 local selected = {} -- "bag:slot" -> { bag, slot, itemID }
 local count = 0
-local buttons = setmetatable({}, { __mode = "k" }) -- button -> { bag, slot } (EllesmereUI), or true
+local buttons = setmetatable({}, { __mode = "k" }) -- button -> { bag, slot } (EllesmereUI), true, or "offline"
+local offlineIDs = setmetatable({}, { __mode = "k" }) -- saved-view button -> number, for its key
+local nextOffline = 0
 local window, Update
 
 local function Enabled()
@@ -51,6 +58,42 @@ end
 local function ItemAt(bag, slot)
   local info = C_Container and C_Container.GetContainerItemInfo and C_Container.GetContainerItemInfo(bag, slot)
   return info and info.itemID and info or nil
+end
+
+local GetInfo = C_Item and C_Item.GetItemInfo or GetItemInfo
+local GetInfoInstant = C_Item and C_Item.GetItemInfoInstant or GetItemInfoInstant
+
+-- The key a button's item is kept under, plus its live bag and slot or its saved item string.
+local function SlotOf(btn)
+  if buttons[btn] == "offline" then
+    if type(btn.str) ~= "string" or not offlineIDs[btn] then return end
+    return "o:" .. offlineIDs[btn], nil, nil, btn.str
+  end
+  local bag, slot = Where(btn)
+  if bag then return KeyOf(bag, slot), bag, slot end
+end
+
+-- key, and what to keep if the button's item is marked (nil for an empty slot)
+local function EntryOf(btn)
+  local key, bag, slot, str = SlotOf(btn)
+  if not key then return end
+  if str then
+    -- "item:123:..." or a full link; pet cages count as the cage item, as EllesmereUI does
+    local kind, num = str:match("^(%a+):(%d+)")
+    if not kind then kind, num = str:match("|H(%a+):(%d+)") end
+    local id = kind == "battlepet" and 82800 or tonumber(num)
+    if not id then return key end
+    local n = tonumber(btn.Count and btn.Count.GetText and btn.Count:GetText() or "") or 1
+    return key, { offline = true, str = str, itemID = id, n = n }
+  end
+  local info = ItemAt(bag, slot)
+  return key, info and { bag = bag, slot = slot, itemID = info.itemID } or nil
+end
+
+local function IsMarked(btn)
+  local key, _, _, str = SlotOf(btn)
+  local s = key and selected[key]
+  return s ~= nil and (not s.offline or s.str == str)
 end
 
 ----------------------------------------------------------------------------------------------
@@ -82,8 +125,7 @@ end
 
 local function Repaint()
   for btn in pairs(buttons) do
-    local bag, slot = Where(btn)
-    Mark(btn, bag ~= nil and btn:IsVisible() and selected[KeyOf(bag, slot)] ~= nil)
+    Mark(btn, btn:IsVisible() and IsMarked(btn))
   end
 end
 
@@ -96,13 +138,11 @@ local function Clear()
   Repaint()
 end
 
--- Marks (add = true) or unmarks (add = false) one slot; true when that changed anything.
-local function Set(bag, slot, add)
-  local key = KeyOf(bag, slot)
+-- Marks (add = true, with the entry to keep) or unmarks one slot; true when that changed anything.
+local function Set(key, add, entry)
   if add and not selected[key] then
-    local info = ItemAt(bag, slot)
-    if not info then return false end
-    selected[key] = { bag = bag, slot = slot, itemID = info.itemID }
+    if not entry then return false end
+    selected[key] = entry
     count = count + 1
     return true
   elseif not add and selected[key] then
@@ -113,11 +153,9 @@ local function Set(bag, slot, add)
   return false
 end
 
-local function Toggle(bag, slot)
-  if Set(bag, slot, not selected[KeyOf(bag, slot)]) then
-    Repaint()
-    Update()
-  end
+local function Changed()
+  Repaint()
+  Update()
 end
 
 -- Alt + press on a slot marks it, or unmarks it if it was marked. Keep the button held and move
@@ -146,15 +184,12 @@ painter:SetScript("OnUpdate", function()
   end
   local btn = MouseOver()
   if not btn or buttons[btn] == nil then return end
-  local bag, slot = Where(btn)
-  if not bag then return end
-  local key = KeyOf(bag, slot)
-  if painting.done[key] then return end
+  local key, entry = EntryOf(btn)
+  if not key or painting.done[key] then return end
   painting.done[key] = true
-  if Set(bag, slot, painting.add) then
-    Repaint()
-    Update()
-  end
+  local changed = false
+  if painting.add and selected[key] and not IsMarked(btn) then changed = Set(key, false) end
+  if Set(key, painting.add, entry) or changed then Changed() end
 end)
 
 painter:SetScript("OnEvent", function()
@@ -167,18 +202,37 @@ local function OnMouseDown(btn, mouse)
   if not Enabled() then return end
   -- Auctionator's selling tab takes Alt+click on bag items while the auction house is open.
   if AuctionHouseFrame and AuctionHouseFrame:IsShown() then return end
-  local bag, slot = Where(btn)
-  if not bag then return end
-  local key = KeyOf(bag, slot)
-  painting = { add = not selected[key], done = { [key] = true } }
+  local key, entry = EntryOf(btn)
+  if not key then return end
+  local add = not IsMarked(btn)
+  painting = { add = add, done = { [key] = true } }
   painter:RegisterEvent("CURSOR_CHANGED")
   painter:Show()
-  Toggle(bag, slot)
+  -- a saved-view button now showing another item: its old mark goes, the new item is added
+  if add and selected[key] then Set(key, false) end
+  if Set(key, add, entry) then Changed() end
 end
 
 local function Track(btn, where)
   if buttons[btn] == nil then btn:HookScript("OnMouseDown", OnMouseDown) end
   if where or buttons[btn] == nil then buttons[btn] = where or true end
+end
+
+-- EllesmereUI's saved view repaints by setting btn.str and calling Show on each slot it uses.
+local function OfflineShown(btn) Mark(btn, IsMarked(btn)) end
+
+local function TrackOffline(btn)
+  if buttons[btn] == "offline" then return end
+  nextOffline = nextOffline + 1
+  offlineIDs[btn] = nextOffline
+  Track(btn, "offline")
+  hooksecurefunc(btn, "Show", OfflineShown)
+  Mark(btn, IsMarked(btn))
+end
+
+local function IsOfflineSlot(f)
+  return f and f.GetObjectType and f:GetObjectType() == "Button" and not f.GetBagID
+    and type(f.str) == "string" and f.Count and f.icon and true or false
 end
 
 ----------------------------------------------------------------------------------------------
@@ -201,7 +255,16 @@ local function Totals()
   local t = { vendor = 0, auction = 0, disenchant = 0, best = 0, noAuction = 0, canDE = 0,
     bestBy = { vendor = 0, auction = 0, disenchant = 0 }, nothing = 0, items = 0, list = {} }
   for key, s in pairs(selected) do
-    local info = ItemAt(s.bag, s.slot)
+    local info
+    if s.offline then
+      -- a saved item: no live slot, so its look and soulbound guess come from the item itself
+      local i = { GetInfo(s.str) }
+      info = { itemID = s.itemID, stackCount = s.n, hyperlink = i[2], quality = i[3],
+        iconFileName = i[10] or (GetInfoInstant and select(5, GetInfoInstant(s.str))),
+        isBound = i[14] == 1 or i[14] == 4 }
+    else
+      info = ItemAt(s.bag, s.slot)
+    end
     if not info or info.itemID ~= s.itemID then
       selected[key] = nil -- moved, sold or used
       count = count - 1
@@ -218,7 +281,7 @@ local function Totals()
       end
       t.best = t.best + best
       if how then t.bestBy[how] = t.bestBy[how] + 1 else t.nothing = t.nothing + 1 end
-      t.list[#t.list + 1] = { key = key, bag = s.bag, slot = s.slot, itemID = s.itemID, n = n,
+      t.list[#t.list + 1] = { key = key, bag = s.bag, slot = s.slot, str = s.str, itemID = s.itemID, n = n,
         icon = info.iconFileName, quality = info.quality, link = info.hyperlink, bound = info.isBound,
         vendor = v, auction = a, disenchant = d, best = best, how = how }
     end
@@ -263,10 +326,10 @@ local function RowEnter(row)
   local item = row.item
   if not item then return end
   GameTooltip:SetOwner(row, "ANCHOR_RIGHT")
-  if GameTooltip.SetBagItem then
+  if item.bag and GameTooltip.SetBagItem then
     GameTooltip:SetBagItem(item.bag, item.slot)
-  elseif item.link then
-    GameTooltip:SetHyperlink(item.link)
+  elseif item.link or item.str then
+    GameTooltip:SetHyperlink(item.link or item.str)
   end
   GameTooltip:Show()
 end
@@ -319,7 +382,7 @@ local function Build()
   f.list = UI.List(body, 580, ROW_H, LIST_ROWS, RenderRow, function(_, item, mouse)
     if mouse == "RightButton" then
       GameTooltip:Hide()
-      Toggle(item.bag, item.slot)
+      if Set(item.key, false) then Changed() end
     end
   end)
   f.list:SetPoint("TOPLEFT", 0, -22 - ROW_H)
@@ -430,6 +493,17 @@ hooker:SetScript("OnEvent", function()
     TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Item, function(tooltip)
       if tooltip ~= GameTooltip then return end
       local owner = tooltip:GetOwner()
+      if IsOfflineSlot(owner) and buttons[owner] ~= "offline" then
+        TrackOffline(owner)
+        -- and the rest of that view's slots, so a drag can start on them right away
+        local parent = owner:GetParent()
+        if parent then
+          for _, f in ipairs({ parent:GetChildren() }) do
+            if IsOfflineSlot(f) then TrackOffline(f) end
+          end
+        end
+        return
+      end
       if owner and buttons[owner] == nil and owner.GetBagID and owner.HookScript then
         local ok, bag = pcall(owner.GetBagID, owner)
         if ok and type(bag) == "number" then Track(owner) end

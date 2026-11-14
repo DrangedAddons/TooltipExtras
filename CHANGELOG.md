@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.28.0
+- Bag item totals: works in EllesmereUI's saved view too, where you look at your bank (or an alt's bags or bank) from your bags without being at the bank. Hover one item there first, then Alt+click or drag as usual. Those items stay in the list until you remove them or clear, since they come from the saved copy. Soulbound is a guess there (bind on pickup and quest items count as bound).
+
 ## 0.27.0
 - Bag item totals: works in the bank too (EllesmereUI's bank window, and other bank addons once you've hovered the item). Bag and bank items can be in the same selection. Bank items drop out of the list when the bank closes, since the game only shows what's in the bank while it's open.
 
