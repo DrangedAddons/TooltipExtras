@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.25.0
+- Bag item totals: Alt+click and keep holding, then drag over more items to add them all. Starting on a marked item removes instead, so you can drag to unmark too. Selection now happens on the press, not the release. If the drag starts to pick the item up, it's put straight back.
+
 ## 0.24.0
 - Bag item totals: the list has **Vendor**, **Auction** and **Disenchant** columns, each row's best value in green, and a **Total** row under the list in the same columns. Below that, the total if each item is sold its best way and how many go each way. Soulbound items show "bound" under Auction; a dash means no value that way. The window is wider and shows 12 rows before scrolling.
 

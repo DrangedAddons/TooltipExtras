@@ -1,7 +1,8 @@
 -- Bag item totals: Alt+click items in your bags to mark them, and a small window adds up what the
 -- marked items are worth: all vendored, all auctioned, all disenchanted, and each sold its best
 -- way (the same rule as the green highlight in Disenchant.lua). Alt+click a marked item again
--- to unmark it; Clear or closing the window unmarks everything.
+-- to unmark it; hold the button after Alt+clicking and move over more items to mark (or unmark)
+-- them all. Clear or closing the window unmarks everything.
 --
 -- Bag buttons: EllesmereUI Bags paints its slots through EUI_Bags.RegisterItemOverlayIcon,
 -- which tells us each button's bag and slot whenever it redraws, so the marks follow the items.
@@ -17,7 +18,8 @@ local MODULE = {
   key = "selecttotals",
   category = "other",
   label = "Bag item totals",
-  tip = "Alt+click items in your bags to mark them. A window adds up what they're worth: "
+  tip = "Alt+click items in your bags to mark them, or Alt+click and drag over several. "
+    .. "A window adds up what they're worth: "
     .. "vendored, auctioned, disenchanted, and each sold its best way.",
   options = { { key = "select", label = "Alt+click bag items to total them", default = true } },
 }
@@ -95,33 +97,89 @@ local function Clear()
   Repaint()
 end
 
-local function Toggle(bag, slot)
-  if bag < FIRST_BAG or bag > LAST_BAG then return end -- bags only, not the bank
+-- Marks (add = true) or unmarks (add = false) one slot; true when that changed anything.
+local function Set(bag, slot, add)
+  if bag < FIRST_BAG or bag > LAST_BAG then return false end -- bags only, not the bank
   local key = KeyOf(bag, slot)
-  if selected[key] then
-    selected[key] = nil
-    count = count - 1
-  else
+  if add and not selected[key] then
     local info = ItemAt(bag, slot)
-    if not info then return end
+    if not info then return false end
     selected[key] = { bag = bag, slot = slot, itemID = info.itemID }
     count = count + 1
+    return true
+  elseif not add and selected[key] then
+    selected[key] = nil
+    count = count - 1
+    return true
   end
-  Repaint()
-  Update()
+  return false
 end
 
-local function OnClick(btn, mouse)
+local function Toggle(bag, slot)
+  if Set(bag, slot, not selected[KeyOf(bag, slot)]) then
+    Repaint()
+    Update()
+  end
+end
+
+-- Alt + press on a slot marks it, or unmarks it if it was marked. Keep the button held and move
+-- over other slots to do the same to each (the first slot decides mark or unmark). It works on
+-- the press, so letting go doesn't toggle the first slot back. Moving with the button held
+-- would pick the item up, so the cursor is cleared while painting.
+local painting -- { add = bool, done = { key = true } } while the button is held
+local painter = CreateFrame("Frame")
+painter:Hide()
+
+local function StopPainting()
+  painting = nil
+  painter:Hide()
+  painter:UnregisterEvent("CURSOR_CHANGED")
+end
+
+local function MouseOver()
+  if GetMouseFoci then return (GetMouseFoci())[1] end
+  return GetMouseFocus and GetMouseFocus()
+end
+
+painter:SetScript("OnUpdate", function()
+  if not painting or not IsMouseButtonDown("LeftButton") then
+    StopPainting()
+    return
+  end
+  local btn = MouseOver()
+  if not btn or buttons[btn] == nil then return end
+  local bag, slot = Where(btn)
+  if not bag then return end
+  local key = KeyOf(bag, slot)
+  if painting.done[key] then return end
+  painting.done[key] = true
+  if Set(bag, slot, painting.add) then
+    Repaint()
+    Update()
+  end
+end)
+
+painter:SetScript("OnEvent", function()
+  -- the press started a drag of the item: put it back
+  if painting and GetCursorInfo() then ClearCursor() end
+end)
+
+local function OnMouseDown(btn, mouse)
   if mouse ~= "LeftButton" or not IsAltKeyDown() or IsControlKeyDown() or IsShiftKeyDown() then return end
   if not Enabled() then return end
   -- Auctionator's selling tab takes Alt+click on bag items while the auction house is open.
   if AuctionHouseFrame and AuctionHouseFrame:IsShown() then return end
   local bag, slot = Where(btn)
-  if bag then Toggle(bag, slot) end
+  if not bag then return end
+  local key = KeyOf(bag, slot)
+  painting = { add = not selected[key], done = { [key] = true } }
+  painter:RegisterEvent("CURSOR_CHANGED")
+  painter:Show()
+  Toggle(bag, slot)
 end
 
 local function Track(btn, where)
-  if buttons[btn] == nil then btn:HookScript("OnClick", OnClick) end
+  if buttons[btn] == nil then btn:HookScript("OnMouseDown", OnMouseDown) end
   if where or buttons[btn] == nil then buttons[btn] = where or true end
 end
 
@@ -296,8 +354,8 @@ local function Build()
   f.how = UI.Text(body, "", "GameFontDisableSmall")
   f.how:SetPoint("TOPLEFT", f.best, "BOTTOMLEFT", 0, -4)
 
-  f.hint = UI.Text(body, "|cffffd100Alt+click|r bag items to add or remove them, "
-    .. "|cffffd100right-click|r a row to remove it.", "GameFontHighlightSmall")
+  f.hint = UI.Text(body, "|cffffd100Alt+click|r bag items to add or remove them (hold and drag "
+    .. "over more), |cffffd100right-click|r a row to remove it.", "GameFontHighlightSmall")
   f.hint:SetPoint("BOTTOMLEFT", 0, 4)
   local clear = UI.Button(body, "Clear", 90, 22, function()
     Clear()
