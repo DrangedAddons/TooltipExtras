@@ -163,8 +163,8 @@ local function Totals()
       t.best = t.best + best
       if how then t.bestBy[how] = t.bestBy[how] + 1 else t.nothing = t.nothing + 1 end
       t.list[#t.list + 1] = { key = key, bag = s.bag, slot = s.slot, itemID = s.itemID, n = n,
-        icon = info.iconFileName, quality = info.quality, link = info.hyperlink,
-        best = best, how = how }
+        icon = info.iconFileName, quality = info.quality, link = info.hyperlink, bound = info.isBound,
+        vendor = v, auction = a, disenchant = d, best = best, how = how }
     end
   end
   table.sort(t.list, function(a, b)
@@ -175,14 +175,34 @@ local function Totals()
 end
 
 ----------------------------------------------------------------------------------------------
--- The window
+-- The window: a list with an item column and Vendor / Auction / Disenchant columns, each row's
+-- best value in green, and a Total row in the same columns.
 
-local ROWS = { "vendor", "auction", "disenchant", "best" }
-local LIST_ROWS = 10
-local HOW = { auction = "auction", vendor = "vendor", disenchant = "disenchant" }
+local LIST_ROWS = 12
+local ROW_H = 20
+local COLS = { "vendor", "auction", "disenchant" }
+local HEAD = { vendor = "Vendor", auction = "Auction", disenchant = "Disenchant" }
+local COL_W, COL_GAP = 104, 8
+local BEST = "|cff33ff33"
+local DASH = "|cff666666-|r"
 
--- One list row: icon, name in its quality colour with the stack size, and on the right its
--- best value and which way that is. Hover shows the item's tooltip.
+-- Right edge of column c (1 = Vendor) from the right edge of a list row.
+local function ColX(c) return -6 - (#COLS - c) * (COL_W + COL_GAP) end
+
+local function Cell(parent, font)
+  local fs = parent:CreateFontString(nil, "ARTWORK", font or "GameFontHighlight")
+  fs:SetWidth(COL_W)
+  fs:SetJustifyH("RIGHT")
+  fs:SetWordWrap(false)
+  return fs
+end
+
+local function Amount(v, best)
+  if not v then return DASH end
+  local text = ns.Money(v)
+  return best and (BEST .. text:gsub("|r", "|r" .. BEST) .. "|r") or text
+end
+
 local function RowEnter(row)
   local item = row.item
   if not item then return end
@@ -196,13 +216,16 @@ local function RowEnter(row)
 end
 
 local function RenderRow(row, item)
-  if not row.tteValue then
-    row.tteValue = row:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-    row.tteValue:SetPoint("RIGHT", -6, 0)
-    row.tteValue:SetJustifyH("RIGHT")
+  if not row.tteCells then
+    row.tteCells = {}
+    for c, key in ipairs(COLS) do
+      local fs = Cell(row)
+      fs:SetPoint("RIGHT", row, "RIGHT", ColX(c), 0)
+      row.tteCells[key] = fs
+    end
     row.text:ClearAllPoints()
     row.text:SetPoint("LEFT", row.icon, "RIGHT", 4, 0)
-    row.text:SetPoint("RIGHT", row.tteValue, "LEFT", -8, 0)
+    row.text:SetPoint("RIGHT", row.tteCells.vendor, "LEFT", -8, 0)
     row:SetScript("OnEnter", RowEnter)
     row:SetScript("OnLeave", GameTooltip_Hide)
   end
@@ -210,42 +233,69 @@ local function RenderRow(row, item)
   local color = item.quality and ITEM_QUALITY_COLORS and ITEM_QUALITY_COLORS[item.quality]
   if color and color.hex then name = color.hex .. name .. "|r" end
   UI.RenderRow(row, name .. (item.n > 1 and (" |cff999999x" .. item.n .. "|r") or ""), item.icon)
-  if item.how then
-    row.tteValue:SetText(ns.Money(item.best) .. " |cff999999" .. HOW[item.how] .. "|r")
-  else
-    row.tteValue:SetText("|cff999999no value|r")
+  for _, key in ipairs(COLS) do
+    local text = Amount(item[key], item.how == key)
+    if key == "auction" and not item.auction and item.bound then text = "|cff666666bound|r" end
+    row.tteCells[key]:SetText(text)
   end
 end
 
 local function Build()
   ns.db = ns.db or ns.GeneralDB()
-  local f = UI.Window({ name = "TooltipExtrasSelection", title = "Selected items", width = 470, height = 440 })
+  local f = UI.Window({ name = "TooltipExtrasSelection", title = "Selected items", width = 620, height = 500 })
   local body = f.body
   f.summary = UI.Text(body, "", "GameFontHighlight")
   f.summary:SetPoint("TOPLEFT", 0, 0)
-  f.list = UI.List(body, 434, 20, LIST_ROWS, RenderRow, function(_, item, mouse)
+
+  -- column headings, lined up with the row cells (rows end 10px inside the list)
+  local head = CreateFrame("Frame", nil, body)
+  head:SetHeight(ROW_H)
+  head:SetPoint("TOPLEFT", 0, -22)
+  head:SetPoint("RIGHT", body, "RIGHT", -10, 0)
+  local itemHead = UI.Text(head, "Item", "GameFontNormal")
+  itemHead:SetPoint("LEFT", 4, 0)
+  for c, key in ipairs(COLS) do
+    local fs = Cell(head, "GameFontNormal")
+    fs:SetPoint("RIGHT", head, "RIGHT", ColX(c), 0)
+    fs:SetText(HEAD[key])
+  end
+
+  f.list = UI.List(body, 580, ROW_H, LIST_ROWS, RenderRow, function(_, item, mouse)
     if mouse == "RightButton" then
       GameTooltip:Hide()
       Toggle(item.bag, item.slot)
     end
   end)
-  f.list:SetPoint("TOPLEFT", 0, -22)
+  f.list:SetPoint("TOPLEFT", 0, -22 - ROW_H)
   f.list:SetPoint("RIGHT", body, "RIGHT", 0, 0)
-  f.rows = {}
-  local y = -22 - (LIST_ROWS * 20 + 4) - 10
-  for _, key in ipairs(ROWS) do
-    local label = UI.Text(body, "", key == "best" and "GameFontNormal" or "GameFontHighlight")
-    label:SetPoint("TOPLEFT", 0, y)
-    local value = UI.Text(body, "", key == "best" and "GameFontNormal" or "GameFontHighlight")
-    value:SetPoint("TOPRIGHT", 0, y)
-    value:SetJustifyH("RIGHT")
-    f.rows[key] = { label = label, value = value }
-    y = y - 22
+
+  -- Total row in the same columns
+  local total = CreateFrame("Frame", nil, body)
+  total:SetHeight(ROW_H)
+  total:SetPoint("TOPLEFT", f.list, "BOTTOMLEFT", 0, -4)
+  total:SetPoint("RIGHT", body, "RIGHT", -10, 0)
+  local totalLabel = UI.Text(total, "Total", "GameFontNormal")
+  totalLabel:SetPoint("LEFT", 4, 0)
+  f.totals = {}
+  for c, key in ipairs(COLS) do
+    local fs = Cell(total)
+    fs:SetPoint("RIGHT", total, "RIGHT", ColX(c), 0)
+    f.totals[key] = fs
   end
+  f.notes = UI.Text(body, "", "GameFontDisableSmall")
+  f.notes:SetPoint("TOPLEFT", total, "BOTTOMLEFT", 4, -2)
+  f.notes:SetPoint("RIGHT", body, "RIGHT", -10, 0)
+  f.notes:SetWordWrap(true)
+
+  f.best = UI.Text(body, "", "GameFontNormal")
+  f.best:SetPoint("TOPLEFT", f.notes, "BOTTOMLEFT", 0, -10)
+  f.bestValue = UI.Text(body, "", "GameFontNormal")
+  f.bestValue:SetPoint("TOP", f.best, "TOP", 0, 0)
+  f.bestValue:SetPoint("RIGHT", total, "RIGHT", ColX(#COLS), 0)
+  f.bestValue:SetJustifyH("RIGHT")
   f.how = UI.Text(body, "", "GameFontDisableSmall")
-  f.how:SetPoint("TOPLEFT", 0, y)
-  f.how:SetPoint("RIGHT", body, "RIGHT", 0, 0)
-  f.how:SetWordWrap(true)
+  f.how:SetPoint("TOPLEFT", f.best, "BOTTOMLEFT", 0, -4)
+
   f.hint = UI.Text(body, "|cffffd100Alt+click|r bag items to add or remove them, "
     .. "|cffffd100right-click|r a row to remove it.", "GameFontHighlightSmall")
   f.hint:SetPoint("BOTTOMLEFT", 0, 4)
@@ -276,27 +326,26 @@ function Update()
     return
   end
   Repaint()
-  local cut = ns.Keep() < 1 and " |cff999999(after 5% cut)|r" or ""
-  window.summary:SetText(Plural(t.items, "item") .. " selected, best value first")
+  window.summary:SetText(Plural(t.items, "item") .. " selected, best value first. "
+    .. BEST .. "Green|r is each item's best way to sell.")
   window.list:SetData(t.list)
-  local r = window.rows
-  r.vendor.label:SetText("All vendored")
-  r.vendor.value:SetText(ns.Money(t.vendor))
-  r.auction.label:SetText("All auctioned" .. cut
-    .. (t.noAuction > 0 and (" |cff999999(" .. t.noAuction .. " no price or soulbound)|r") or ""))
-  r.auction.value:SetText(ns.Money(t.auction))
-  r.disenchant.label:SetText("All disenchanted" .. cut
-    .. (t.canDE < t.items and (" |cff999999(" .. t.canDE .. " of " .. t.items .. " can)|r") or ""))
-  r.disenchant.value:SetText(t.canDE > 0 and ns.Money(t.disenchant) or "|cff999999-|r")
-  r.best.label:SetText("Each sold its best way")
-  r.best.value:SetText(ns.Money(t.best))
+  window.totals.vendor:SetText(Amount(t.vendor))
+  window.totals.auction:SetText(Amount(t.auction))
+  window.totals.disenchant:SetText(t.canDE > 0 and Amount(t.disenchant) or DASH)
+  local notes = {}
+  if ns.Keep() < 1 then notes[#notes + 1] = "Auction and disenchant are after the 5% auction house cut." end
+  if t.noAuction > 0 then notes[#notes + 1] = t.noAuction .. " with no auction price or soulbound." end
+  if t.canDE < t.items then notes[#notes + 1] = t.canDE .. " of " .. t.items .. " can be disenchanted." end
+  window.notes:SetText(table.concat(notes, " "))
+  window.best:SetText("Each sold its best way")
+  window.bestValue:SetText(Amount(t.best))
   local parts = {}
   for _, how in ipairs({ "auction", "vendor", "disenchant" }) do
     local n = t.bestBy[how]
     if n > 0 then parts[#parts + 1] = n .. " " .. (how == "auction" and "auctioned" or how == "vendor" and "vendored" or "disenchanted") end
   end
   if t.nothing > 0 then parts[#parts + 1] = t.nothing .. " with no value" end
-  window.how:SetText("Best way: " .. table.concat(parts, ", "))
+  window.how:SetText(table.concat(parts, ", "))
   if not window:IsShown() then window:Show() end
 end
 

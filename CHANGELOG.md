@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.24.0
+- Bag item totals: the list has **Vendor**, **Auction** and **Disenchant** columns, each row's best value in green, and a **Total** row under the list in the same columns. Below that, the total if each item is sold its best way and how many go each way. Soulbound items show "bound" under Auction; a dash means no value that way. The window is wider and shows 12 rows before scrolling.
+
 ## 0.23.0
 - Bag item totals: the window lists the selected items, best value first. Each row has the item's icon, name in its quality colour, stack size, and its best value with which way that is (auction, vendor or disenchant). Hover a row for the item's tooltip; right-click it to remove it. The list scrolls past 10 items, and the totals sit below it.
 
