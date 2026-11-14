@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.27.0
+- Bag item totals: works in the bank too (EllesmereUI's bank window, and other bank addons once you've hovered the item). Bag and bank items can be in the same selection. Bank items drop out of the list when the bank closes, since the game only shows what's in the bank while it's open.
+
 ## 0.26.0
 - **Leatherworking:** Deeprock Salt shows **Salt Shaker** with the profit or loss from refining it into Refined Deeprock Salt (1 to 1) instead of selling it. Its own tick, "Refining Deeprock Salt", sits under Leatherworking. The Salt Shaker has a cooldown of about 3 days.
 

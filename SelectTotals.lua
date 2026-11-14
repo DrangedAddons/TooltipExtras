@@ -1,4 +1,4 @@
--- Bag item totals: Alt+click items in your bags to mark them, and a small window adds up what the
+-- Bag item totals: Alt+click items in your bags or bank to mark them, and a small window adds up what the
 -- marked items are worth: all vendored, all auctioned, all disenchanted, and each sold its best
 -- way (the same rule as the green highlight in Disenchant.lua). Alt+click a marked item again
 -- to unmark it; hold the button after Alt+clicking and move over more items to mark (or unmark)
@@ -10,6 +10,7 @@
 -- is picked up the first time you hover it.
 --
 -- Marks are kept by bag and slot, with the item ID, and dropped when that slot's item changes.
+-- Bank slots can only be read while the bank is open, so bank marks drop when it closes.
 local ADDON, ns = ...
 local UI = ns.UI
 ns.Print = ns.Print or function(...) print("|cff33ff99TooltipExtras|r:", ...) end
@@ -18,14 +19,12 @@ local MODULE = {
   key = "selecttotals",
   category = "other",
   label = "Bag item totals",
-  tip = "Alt+click items in your bags to mark them, or Alt+click and drag over several. "
+  tip = "Alt+click items in your bags or bank to mark them, or Alt+click and drag over several. "
     .. "A window adds up what they're worth: "
     .. "vendored, auctioned, disenchanted, and each sold its best way.",
-  options = { { key = "select", label = "Alt+click bag items to total them", default = true } },
+  options = { { key = "select", label = "Alt+click bag and bank items to total them", default = true } },
 }
 ns.AddModule(MODULE)
-
-local FIRST_BAG, LAST_BAG = 0, (NUM_TOTAL_EQUIPPED_BAG_SLOTS or NUM_BAG_SLOTS or 4)
 
 local selected = {} -- "bag:slot" -> { bag, slot, itemID }
 local count = 0
@@ -99,7 +98,6 @@ end
 
 -- Marks (add = true) or unmarks (add = false) one slot; true when that changed anything.
 local function Set(bag, slot, add)
-  if bag < FIRST_BAG or bag > LAST_BAG then return false end -- bags only, not the bank
   local key = KeyOf(bag, slot)
   if add and not selected[key] then
     local info = ItemAt(bag, slot)
@@ -354,7 +352,7 @@ local function Build()
   f.how = UI.Text(body, "", "GameFontDisableSmall")
   f.how:SetPoint("TOPLEFT", f.best, "BOTTOMLEFT", 0, -4)
 
-  f.hint = UI.Text(body, "|cffffd100Alt+click|r bag items to add or remove them (hold and drag "
+  f.hint = UI.Text(body, "|cffffd100Alt+click|r bag or bank items to add or remove them (hold and drag "
     .. "over more), |cffffd100right-click|r a row to remove it.", "GameFontHighlightSmall")
   f.hint:SetPoint("BOTTOMLEFT", 0, 4)
   local clear = UI.Button(body, "Clear", 90, 22, function()
@@ -365,7 +363,11 @@ local function Build()
   f:HookScript("OnHide", Clear)
   -- Prices and stacks change while it's open (selling, stacking, a fresh scan).
   f:RegisterEvent("BAG_UPDATE_DELAYED")
-  f:SetScript("OnEvent", function() Update() end)
+  -- bank slots change and become unreadable without a BAG_UPDATE_DELAYED
+  for _, e in ipairs({ "PLAYERBANKSLOTS_CHANGED", "BANKFRAME_CLOSED" }) do pcall(f.RegisterEvent, f, e) end
+  f:SetScript("OnEvent", function(_, event)
+    if event == "BANKFRAME_CLOSED" then C_Timer.After(0, Update) else Update() end
+  end)
   return f
 end
 
