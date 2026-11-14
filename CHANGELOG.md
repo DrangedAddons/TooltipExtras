@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.26.0
+- **Leatherworking:** Deeprock Salt shows **Salt Shaker** with the profit or loss from refining it into Refined Deeprock Salt (1 to 1) instead of selling it. Its own tick, "Refining Deeprock Salt", sits under Leatherworking. The Salt Shaker has a cooldown of about 3 days.
+
 ## 0.25.0
 - Bag item totals: Alt+click and keep holding, then drag over more items to add them all. Starting on a marked item removes instead, so you can drag to unmark too. Selection now happens on the press, not the release. If the drag starts to pick the item up, it's put straight back.
 
