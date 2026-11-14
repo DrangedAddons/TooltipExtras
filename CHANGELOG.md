@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.29.0
+- Bag item totals: works in Baganator, in your bags, your bank, the bank view away from the bank, and alts' bags and banks. No hover needed first. Baganator uses Alt+click to flash matching items, so those flash as you mark them. Soulbound comes from Baganator's saved copy, so it's exact there.
+- Bag item totals: marks in Baganator now follow the items when it redraws (it reuses its slot buttons).
+
 ## 0.28.0
 - Bag item totals: works in EllesmereUI's saved view too, where you look at your bank (or an alt's bags or bank) from your bags without being at the bank. Hover one item there first, then Alt+click or drag as usual. Those items stay in the list until you remove them or clear, since they come from the saved copy. Soulbound is a guess there (bind on pickup and quest items count as bound).
 

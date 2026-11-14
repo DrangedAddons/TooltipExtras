@@ -12,10 +12,13 @@
 -- Marks are kept by bag and slot, with the item ID, and dropped when that slot's item changes.
 -- Bank slots can only be read while the bank is open, so bank marks drop when it closes.
 --
--- EllesmereUI's saved view (your bank, an alt's bags or bank, looked at away from the bank) draws
--- display-only buttons with no bag or slot, just the saved item string (btn.str) and the stack
--- size on btn.Count. Marks there are snapshots of that item and stack, kept by button; the
--- buttons are found the first time one shows a tooltip, along with the others beside it.
+-- Saved views (your bank, an alt's bags or bank, looked at away from the bank) draw buttons with
+-- no live bag or slot, just a saved item. Marks there are snapshots of that item and stack, kept
+-- by button, and re-checked whenever the view repaints that button.
+--   EllesmereUI: btn.str is the item string, the stack size is on btn.Count. Found the first
+--     time one shows a tooltip, along with the others beside it; repaints call btn:Show().
+--   Baganator: btn.BGR holds itemLink, itemCount and isBound. Every item button, live or saved,
+--     comes through its skin listener when it's made; repaints call btn:SetItemDetails().
 local ADDON, ns = ...
 local UI = ns.UI
 ns.Print = ns.Print or function(...) print("|cff33ff99TooltipExtras|r:", ...) end
@@ -35,6 +38,7 @@ local selected = {} -- "bag:slot" -> { bag, slot, itemID }
 local count = 0
 local buttons = setmetatable({}, { __mode = "k" }) -- button -> { bag, slot } (EllesmereUI), true, or "offline"
 local offlineIDs = setmetatable({}, { __mode = "k" }) -- saved-view button -> number, for its key
+local readers = setmetatable({}, { __mode = "k" }) -- saved-view button -> fn(btn) -> str, n, bound
 local nextOffline = 0
 local window, Update
 
@@ -66,8 +70,9 @@ local GetInfoInstant = C_Item and C_Item.GetItemInfoInstant or GetItemInfoInstan
 -- The key a button's item is kept under, plus its live bag and slot or its saved item string.
 local function SlotOf(btn)
   if buttons[btn] == "offline" then
-    if type(btn.str) ~= "string" or not offlineIDs[btn] then return end
-    return "o:" .. offlineIDs[btn], nil, nil, btn.str
+    local str = readers[btn](btn)
+    if type(str) ~= "string" or not offlineIDs[btn] then return end
+    return "o:" .. offlineIDs[btn], nil, nil, str
   end
   local bag, slot = Where(btn)
   if bag then return KeyOf(bag, slot), bag, slot end
@@ -83,8 +88,8 @@ local function EntryOf(btn)
     if not kind then kind, num = str:match("|H(%a+):(%d+)") end
     local id = kind == "battlepet" and 82800 or tonumber(num)
     if not id then return key end
-    local n = tonumber(btn.Count and btn.Count.GetText and btn.Count:GetText() or "") or 1
-    return key, { offline = true, str = str, itemID = id, n = n }
+    local _, n, bound = readers[btn](btn)
+    return key, { offline = true, str = str, itemID = id, n = n or 1, bound = bound }
   end
   local info = ItemAt(bag, slot)
   return key, info and { bag = bag, slot = slot, itemID = info.itemID } or nil
@@ -218,16 +223,27 @@ local function Track(btn, where)
   if where or buttons[btn] == nil then buttons[btn] = where or true end
 end
 
--- EllesmereUI's saved view repaints by setting btn.str and calling Show on each slot it uses.
-local function OfflineShown(btn) Mark(btn, IsMarked(btn)) end
+local function Remark(btn) Mark(btn, btn:IsVisible() and IsMarked(btn)) end
 
-local function TrackOffline(btn)
+-- repaint: the method the bag addon calls each time it puts an item on the button
+local function TrackOffline(btn, reader, repaint)
   if buttons[btn] == "offline" then return end
   nextOffline = nextOffline + 1
   offlineIDs[btn] = nextOffline
+  readers[btn] = reader
   Track(btn, "offline")
-  hooksecurefunc(btn, "Show", OfflineShown)
-  Mark(btn, IsMarked(btn))
+  hooksecurefunc(btn, repaint, Remark)
+  Remark(btn)
+end
+
+local function ReadEllesmere(btn)
+  return btn.str, tonumber(btn.Count and btn.Count.GetText and btn.Count:GetText() or "")
+end
+
+local function ReadBaganator(btn)
+  local d = btn.BGR
+  if type(d) ~= "table" then return end
+  return d.itemLink, d.itemCount, d.isBound
 end
 
 local function IsOfflineSlot(f)
@@ -261,7 +277,7 @@ local function Totals()
       local i = { GetInfo(s.str) }
       info = { itemID = s.itemID, stackCount = s.n, hyperlink = i[2], quality = i[3],
         iconFileName = i[10] or (GetInfoInstant and select(5, GetInfoInstant(s.str))),
-        isBound = i[14] == 1 or i[14] == 4 }
+        isBound = s.bound == nil and (i[14] == 1 or i[14] == 4) or s.bound }
     else
       info = ItemAt(s.bag, s.slot)
     end
@@ -488,18 +504,41 @@ hooker:SetScript("OnEvent", function()
   if EUI_Bags and EUI_Bags.RegisterItemOverlayIcon then
     pcall(EUI_Bags.RegisterItemOverlayIcon, "TooltipExtras_Select", Paint)
   end
+  -- Baganator: every item button it makes passes through its skin listeners once. Live slots
+  -- (bags, bank at the banker) have GetBagID; saved ones (bank away from it, alts) have BGR.
+  -- Buttons are pooled and reused for other slots, so marks are redone on each SetItemDetails.
+  if Baganator and Baganator.API and Baganator.API.Skins and Baganator.API.Skins.RegisterListener then
+    local function OnFrame(d)
+      local btn = type(d) == "table" and d.regionType == "ItemButton" and d.region
+      if not btn or not btn.SetItemDetails or buttons[btn] ~= nil then return end
+      for _, tag in ipairs(d.tags or {}) do
+        if tag == "containerBag" then return end -- the bag slots themselves
+      end
+      if btn.GetBagID then
+        Track(btn)
+        hooksecurefunc(btn, "SetItemDetails", Remark)
+      else
+        TrackOffline(btn, ReadBaganator, "SetItemDetails")
+      end
+    end
+    pcall(Baganator.API.Skins.RegisterListener, OnFrame)
+    local ok, all = pcall(Baganator.API.Skins.GetAllFrames)
+    if ok and type(all) == "table" then
+      for _, d in ipairs(all) do pcall(OnFrame, d) end
+    end
+  end
   -- Other bag addons: a container slot button is picked up when its tooltip shows.
   if TooltipDataProcessor and TooltipDataProcessor.AddTooltipPostCall and Enum and Enum.TooltipDataType then
     TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Item, function(tooltip)
       if tooltip ~= GameTooltip then return end
       local owner = tooltip:GetOwner()
       if IsOfflineSlot(owner) and buttons[owner] ~= "offline" then
-        TrackOffline(owner)
+        TrackOffline(owner, ReadEllesmere, "Show")
         -- and the rest of that view's slots, so a drag can start on them right away
         local parent = owner:GetParent()
         if parent then
           for _, f in ipairs({ parent:GetChildren() }) do
-            if IsOfflineSlot(f) then TrackOffline(f) end
+            if IsOfflineSlot(f) then TrackOffline(f, ReadEllesmere, "Show") end
           end
         end
         return
