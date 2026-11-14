@@ -555,17 +555,31 @@ hooker:SetScript("OnEvent", function()
   -- (bags, bank at the banker) have GetBagID; saved ones (bank away from it, alts) have BGR.
   -- Buttons are pooled and reused for other slots, so marks are redone on each SetItemDetails.
   if Baganator and Baganator.API and Baganator.API.Skins and Baganator.API.Skins.RegisterListener then
+    local saved = {}
+    for _, name in ipairs({ "BaganatorRetailCachedItemButtonMixin", "BaganatorClassicCachedItemButtonMixin" }) do
+      local m = _G[name]
+      if type(m) == "table" and m.SetItemDetails then saved[m.SetItemDetails] = true end
+    end
+    local function IsBaganatorSaved(btn)
+      if saved[btn.SetItemDetails] then return true end
+      -- no known mixin: a button that can't name a live bag is a saved one
+      if not btn.GetBagID then return true end
+      local ok, bag = pcall(btn.GetBagID, btn)
+      return not (ok and type(bag) == "number")
+    end
     local function OnFrame(d)
       local btn = type(d) == "table" and d.regionType == "ItemButton" and d.region
       if not btn or not btn.SetItemDetails or buttons[btn] ~= nil then return end
       for _, tag in ipairs(d.tags or {}) do
         if tag == "containerBag" then return end -- the bag slots themselves
       end
-      if btn.GetBagID then
+      -- Saved buttons can have GetBagID too (from the ItemButton base), so go by Baganator's own
+      -- button type: Mixin copies its functions, so a saved button's SetItemDetails is the mixin's.
+      if IsBaganatorSaved(btn) then
+        TrackOffline(btn, ReadBaganator, "SetItemDetails")
+      elseif btn.GetBagID then
         Track(btn)
         hooksecurefunc(btn, "SetItemDetails", Remark)
-      else
-        TrackOffline(btn, ReadBaganator, "SetItemDetails")
       end
     end
     pcall(Baganator.API.Skins.RegisterListener, OnFrame)

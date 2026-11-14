@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.30.1
+- Bag item totals: fixed Alt+click doing nothing in Baganator's saved views (the bank away from the bank, alts' bags and banks). Those buttons were taken for live bag slots.
+
 ## 0.30.0
 - Bag item totals: **Combine stacks of the same item** tick at the bottom of the window (on by default). Four stacks of 20 show as one row, x80 (4 stacks), with the values added up. Right-clicking that row removes all four. Soulbound and tradeable copies stay on separate rows.
 
