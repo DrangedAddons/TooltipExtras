@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.30.0
+- Bag item totals: **Combine stacks of the same item** tick at the bottom of the window (on by default). Four stacks of 20 show as one row, x80 (4 stacks), with the values added up. Right-clicking that row removes all four. Soulbound and tradeable copies stay on separate rows.
+
 ## 0.29.0
 - Bag item totals: works in Baganator, in your bags, your bank, the bank view away from the bank, and alts' bags and banks. No hover needed first. Baganator uses Alt+click to flash matching items, so those flash as you mark them. Soulbound comes from Baganator's saved copy, so it's exact there.
 - Bag item totals: marks in Baganator now follow the items when it redraws (it reuses its slot buttons).

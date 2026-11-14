@@ -367,7 +367,9 @@ local function RenderRow(row, item)
   local name = ns.ItemName(item.itemID) or ("item " .. item.itemID)
   local color = item.quality and ITEM_QUALITY_COLORS and ITEM_QUALITY_COLORS[item.quality]
   if color and color.hex then name = color.hex .. name .. "|r" end
-  UI.RenderRow(row, name .. (item.n > 1 and (" |cff999999x" .. item.n .. "|r") or ""), item.icon)
+  local qty = item.n > 1 and (" |cff999999x" .. item.n .. "|r") or ""
+  if item.stacks and item.stacks > 1 then qty = qty .. " |cff666666(" .. item.stacks .. " stacks)|r" end
+  UI.RenderRow(row, name .. qty, item.icon)
   for _, key in ipairs(COLS) do
     local text = Amount(item[key], item.how == key)
     if key == "auction" and not item.auction and item.bound then text = "|cff666666bound|r" end
@@ -377,7 +379,7 @@ end
 
 local function Build()
   ns.db = ns.db or ns.GeneralDB()
-  local f = UI.Window({ name = "TooltipExtrasSelection", title = "Selected items", width = 620, height = 500 })
+  local f = UI.Window({ name = "TooltipExtrasSelection", title = "Selected items", width = 620, height = 530 })
   local body = f.body
   f.summary = UI.Text(body, "", "GameFontHighlight")
   f.summary:SetPoint("TOPLEFT", 0, 0)
@@ -398,7 +400,11 @@ local function Build()
   f.list = UI.List(body, 580, ROW_H, LIST_ROWS, RenderRow, function(_, item, mouse)
     if mouse == "RightButton" then
       GameTooltip:Hide()
-      if Set(item.key, false) then Changed() end
+      local changed = false
+      for _, key in ipairs(item.keys or { item.key }) do
+        if Set(key, false) then changed = true end
+      end
+      if changed then Changed() end
     end
   end)
   f.list:SetPoint("TOPLEFT", 0, -22 - ROW_H)
@@ -433,7 +439,15 @@ local function Build()
 
   f.hint = UI.Text(body, "|cffffd100Alt+click|r bag or bank items to add or remove them (hold and drag "
     .. "over more), |cffffd100right-click|r a row to remove it.", "GameFontHighlightSmall")
-  f.hint:SetPoint("BOTTOMLEFT", 0, 4)
+  f.hint:SetPoint("BOTTOMLEFT", 0, 30)
+  local combine = UI.Check(body, "Combine stacks of the same item",
+    function() return ns.ModuleDB(MODULE).combine ~= false end,
+    function(v)
+      ns.ModuleDB(MODULE).combine = v
+      Update()
+    end)
+  combine:SetPoint("BOTTOMLEFT", 0, -1)
+  combine:Refresh()
   local clear = UI.Button(body, "Clear", 90, 22, function()
     Clear()
     Update()
@@ -448,6 +462,39 @@ local function Build()
     if event == "BANKFRAME_CLOSED" then C_Timer.After(0, Update) else Update() end
   end)
   return f
+end
+
+-- One row per item (soulbound and not kept apart): stacks added up, each column summed, the
+-- best way picked again from the sums. Same order as the list, best value first.
+local function Combined(list)
+  local rows, byItem = {}, {}
+  for _, it in ipairs(list) do
+    local id = it.itemID .. (it.bound and "b" or "")
+    local row = byItem[id]
+    if not row then
+      row = { key = it.key, keys = {}, bag = it.bag, slot = it.slot, str = it.str, itemID = it.itemID,
+        n = 0, stacks = 0, icon = it.icon, quality = it.quality, link = it.link, bound = it.bound }
+      byItem[id] = row
+      rows[#rows + 1] = row
+    end
+    row.keys[#row.keys + 1] = it.key
+    row.n = row.n + it.n
+    row.stacks = row.stacks + 1
+    for _, col in ipairs(COLS) do
+      if it[col] then row[col] = (row[col] or 0) + it[col] end
+    end
+  end
+  for _, row in ipairs(rows) do
+    row.best, row.how = 0, nil
+    for _, col in ipairs({ "vendor", "auction", "disenchant" }) do
+      if row[col] and row[col] > row.best then row.best, row.how = row[col], col end
+    end
+  end
+  table.sort(rows, function(a, b)
+    if a.best ~= b.best then return a.best > b.best end
+    return a.key < b.key
+  end)
+  return rows
 end
 
 local function Plural(n, word) return n .. " " .. word .. (n == 1 and "" or "s") end
@@ -467,7 +514,7 @@ function Update()
   Repaint()
   window.summary:SetText(Plural(t.items, "item") .. " selected, best value first. "
     .. BEST .. "Green|r is each item's best way to sell.")
-  window.list:SetData(t.list)
+  window.list:SetData(ns.ModuleDB(MODULE).combine ~= false and Combined(t.list) or t.list)
   window.totals.vendor:SetText(Amount(t.vendor))
   window.totals.auction:SetText(Amount(t.auction))
   window.totals.disenchant:SetText(t.canDE > 0 and Amount(t.disenchant) or DASH)
