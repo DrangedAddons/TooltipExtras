@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.31.0
+- **Neutral auction prices** (new, under Other, off until you tick it): a **Neutral AH** line under Auctionator's Auction line with the price at the neutral auction houses (Booty Bay, Gadgetzan, Everlook), from AuctionatorSync's neutral price list. Follows Auctionator's stack price (Shift) and shows the age when it's a day or more old. Requires AuctionatorSync v1.4.3 or later.
+- New file: restart the game client once (a /reload won't load it).
+
 ## 0.30.1
 - Bag item totals: fixed Alt+click doing nothing in Baganator's saved views (the bank away from the bank, alts' bags and banks). Those buttons were taken for live bag slots.
 

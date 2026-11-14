@@ -2,9 +2,9 @@
 ## Title: TooltipExtras
 ## Notes: Profit lines on item tooltips, per profession: essence combine/split and disenchant value (Enchanting), ore to bar (Mining), cloth to bolt (Tailoring), leather upgrades and cured hides (Leatherworking), stone to blasting powder (Engineering), stone to grinding stone (Blacksmithing); best zones and schools for raw fish (Fishing); Darkmoon Faire ticket hand-ins ranked by cost; Green Hills of Stranglethorn page costs; Runecloth to each rep standing at cloth quartermasters; what mage Comprehension scrolls decipher into; priced reagent lists on recipe links for every profession; chat link tooltips on hover; Alt+click bag items to total their worth. Prices from Auctionator.
 ## Author: Dranged
-## Version: 0.30.1
+## Version: 0.31.0
 ## X-DrangedAddons-Games: _forever_
-## OptionalDeps: Auctionator, Chattynator, Baganator, EllesmereUIBags
+## OptionalDeps: Auctionator, AuctionatorSync, Chattynator, Baganator, EllesmereUIBags
 ## SavedVariables: TooltipExtrasDB
 ## SavedVariablesPerCharacter: TooltipExtrasCharDB
 ## IconTexture: Interface\AddOns\TooltipExtras\icon
@@ -21,6 +21,7 @@ ChatHover.lua
 ClothRep.lua
 Darkmoon.lua
 Disenchant.lua
+NeutralPrices.lua
 SelectTotals.lua
 RecipeData.lua
 RecipeCost.lua
