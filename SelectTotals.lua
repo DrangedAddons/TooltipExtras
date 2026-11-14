@@ -143,7 +143,7 @@ end
 
 local function Totals()
   local t = { vendor = 0, auction = 0, disenchant = 0, best = 0, noAuction = 0, canDE = 0,
-    bestBy = { vendor = 0, auction = 0, disenchant = 0 }, nothing = 0, items = 0 }
+    bestBy = { vendor = 0, auction = 0, disenchant = 0 }, nothing = 0, items = 0, list = {} }
   for key, s in pairs(selected) do
     local info = ItemAt(s.bag, s.slot)
     if not info or info.itemID ~= s.itemID then
@@ -162,8 +162,15 @@ local function Totals()
       end
       t.best = t.best + best
       if how then t.bestBy[how] = t.bestBy[how] + 1 else t.nothing = t.nothing + 1 end
+      t.list[#t.list + 1] = { key = key, bag = s.bag, slot = s.slot, itemID = s.itemID, n = n,
+        icon = info.iconFileName, quality = info.quality, link = info.hyperlink,
+        best = best, how = how }
     end
   end
+  table.sort(t.list, function(a, b)
+    if a.best ~= b.best then return a.best > b.best end
+    return a.key < b.key
+  end)
   return t
 end
 
@@ -171,15 +178,61 @@ end
 -- The window
 
 local ROWS = { "vendor", "auction", "disenchant", "best" }
+local LIST_ROWS = 10
+local HOW = { auction = "auction", vendor = "vendor", disenchant = "disenchant" }
+
+-- One list row: icon, name in its quality colour with the stack size, and on the right its
+-- best value and which way that is. Hover shows the item's tooltip.
+local function RowEnter(row)
+  local item = row.item
+  if not item then return end
+  GameTooltip:SetOwner(row, "ANCHOR_RIGHT")
+  if GameTooltip.SetBagItem then
+    GameTooltip:SetBagItem(item.bag, item.slot)
+  elseif item.link then
+    GameTooltip:SetHyperlink(item.link)
+  end
+  GameTooltip:Show()
+end
+
+local function RenderRow(row, item)
+  if not row.tteValue then
+    row.tteValue = row:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+    row.tteValue:SetPoint("RIGHT", -6, 0)
+    row.tteValue:SetJustifyH("RIGHT")
+    row.text:ClearAllPoints()
+    row.text:SetPoint("LEFT", row.icon, "RIGHT", 4, 0)
+    row.text:SetPoint("RIGHT", row.tteValue, "LEFT", -8, 0)
+    row:SetScript("OnEnter", RowEnter)
+    row:SetScript("OnLeave", GameTooltip_Hide)
+  end
+  local name = ns.ItemName(item.itemID) or ("item " .. item.itemID)
+  local color = item.quality and ITEM_QUALITY_COLORS and ITEM_QUALITY_COLORS[item.quality]
+  if color and color.hex then name = color.hex .. name .. "|r" end
+  UI.RenderRow(row, name .. (item.n > 1 and (" |cff999999x" .. item.n .. "|r") or ""), item.icon)
+  if item.how then
+    row.tteValue:SetText(ns.Money(item.best) .. " |cff999999" .. HOW[item.how] .. "|r")
+  else
+    row.tteValue:SetText("|cff999999no value|r")
+  end
+end
 
 local function Build()
   ns.db = ns.db or ns.GeneralDB()
-  local f = UI.Window({ name = "TooltipExtrasSelection", title = "Selected items", width = 400, height = 250 })
+  local f = UI.Window({ name = "TooltipExtrasSelection", title = "Selected items", width = 470, height = 440 })
   local body = f.body
   f.summary = UI.Text(body, "", "GameFontHighlight")
   f.summary:SetPoint("TOPLEFT", 0, 0)
+  f.list = UI.List(body, 434, 20, LIST_ROWS, RenderRow, function(_, item, mouse)
+    if mouse == "RightButton" then
+      GameTooltip:Hide()
+      Toggle(item.bag, item.slot)
+    end
+  end)
+  f.list:SetPoint("TOPLEFT", 0, -22)
+  f.list:SetPoint("RIGHT", body, "RIGHT", 0, 0)
   f.rows = {}
-  local y = -28
+  local y = -22 - (LIST_ROWS * 20 + 4) - 10
   for _, key in ipairs(ROWS) do
     local label = UI.Text(body, "", key == "best" and "GameFontNormal" or "GameFontHighlight")
     label:SetPoint("TOPLEFT", 0, y)
@@ -193,7 +246,8 @@ local function Build()
   f.how:SetPoint("TOPLEFT", 0, y)
   f.how:SetPoint("RIGHT", body, "RIGHT", 0, 0)
   f.how:SetWordWrap(true)
-  f.hint = UI.Text(body, "|cffffd100Alt+click|r bag items to add or remove them.", "GameFontHighlightSmall")
+  f.hint = UI.Text(body, "|cffffd100Alt+click|r bag items to add or remove them, "
+    .. "|cffffd100right-click|r a row to remove it.", "GameFontHighlightSmall")
   f.hint:SetPoint("BOTTOMLEFT", 0, 4)
   local clear = UI.Button(body, "Clear", 90, 22, function()
     Clear()
@@ -223,7 +277,8 @@ function Update()
   end
   Repaint()
   local cut = ns.Keep() < 1 and " |cff999999(after 5% cut)|r" or ""
-  window.summary:SetText(Plural(t.items, "item") .. " selected")
+  window.summary:SetText(Plural(t.items, "item") .. " selected, best value first")
+  window.list:SetData(t.list)
   local r = window.rows
   r.vendor.label:SetText("All vendored")
   r.vendor.value:SetText(ns.Money(t.vendor))

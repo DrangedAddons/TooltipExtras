@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.23.0
+- Bag item totals: the window lists the selected items, best value first. Each row has the item's icon, name in its quality colour, stack size, and its best value with which way that is (auction, vendor or disenchant). Hover a row for the item's tooltip; right-click it to remove it. The list scrolls past 10 items, and the totals sit below it.
+
 ## 0.22.0
 - **Bag item totals** (new, under Other, starts ticked): Alt+click items in your bags to mark them (a gold shade and a tick). A window adds up the marked items: all vendored, all auctioned, all disenchanted, and each sold its best way, with how many go each way. Auction and disenchant count the 5% auction house cut when that setting is on. Alt+click a marked item to unmark it; **Clear** or closing the window unmarks everything. Marks follow the items when EllesmereUI Bags redraws, and drop off items that are sold, moved or used.
 - Works in EllesmereUI Bags, and in other bag addons once you've hovered the item. Not while the auction house is open, where Auctionator uses Alt+click.
