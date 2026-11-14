@@ -31,6 +31,8 @@ Profit is green, loss is red. It takes off the 5% auction house cut by default (
 
 - **Best way to sell:** of Auctionator's Vendor, Auction and Disenchant lines, the one worth the most turns green (after the 5% auction house cut, if that's on).
 
+- **Bag item totals:** Alt+click items in your bags to mark them; a window adds up what they're worth vendored, auctioned, disenchanted, and each sold its best way.
+
 ## Using it
 `/tte` (or `/tooltipextras`), the addon list button or Options > AddOns > TooltipExtras opens the settings. Settings are account-wide.
 

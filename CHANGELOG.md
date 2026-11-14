@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.22.0
+- **Bag item totals** (new, under Other, starts ticked): Alt+click items in your bags to mark them (a gold shade and a tick). A window adds up the marked items: all vendored, all auctioned, all disenchanted, and each sold its best way, with how many go each way. Auction and disenchant count the 5% auction house cut when that setting is on. Alt+click a marked item to unmark it; **Clear** or closing the window unmarks everything. Marks follow the items when EllesmereUI Bags redraws, and drop off items that are sold, moved or used.
+- Works in EllesmereUI Bags, and in other bag addons once you've hovered the item. Not while the auction house is open, where Auctionator uses Alt+click.
+- Adds the DrangedAddons window kit (Theme.lua, Widgets.lua, Window.lua) for the totals window.
+- New files: restart the game client once (a /reload won't load them).
+
 ## 0.21.1
 - No change in game. The disenchant table can now be checked against fresh Wowhead Forever counts and updated with `tools/disenchant` (see its README). The first check, 2026-11-14, found no rows that needed changing.
 
