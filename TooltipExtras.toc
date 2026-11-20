@@ -4,6 +4,8 @@
 ## Author: Dranged
 ## Version: 0.31.0
 ## X-DrangedAddons-Games: _forever_
+## X-DrangedHub-Page: TooltipExtras
+## X-DrangedHub-Open: /tooltipextras
 ## OptionalDeps: Auctionator, AuctionatorSync, Chattynator, Baganator, EllesmereUIBags
 ## SavedVariables: TooltipExtrasDB
 ## SavedVariablesPerCharacter: TooltipExtrasCharDB
