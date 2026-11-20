@@ -23,6 +23,7 @@ Profit is green, loss is red. It takes off the 5% auction house cut by default (
 - **Green Hills of Stranglethorn:** hover Barnil Stonepot in Booty Bay to see what each chapter costs if you buy the pages you don't have off the auction house, and the total.
 
 - **Cloth reputation:** hover a city's cloth quartermaster (or Belanaa Windveil for the High Order in Dalaran) to see how much Runecloth (and gold) it takes to reach each standing above yours with that faction, using the repeatable Additional Runecloth turn-in.
+- **Thorium Brotherhood:** hover Master Smith Burninate for the hand-ins to each standing above yours and their auction cost: the Fiery Flux supply turn-ins to Friendly (cheapest way in green), then Dark Iron Residue.
 
 - **Mage scrolls:** untranslated Comprehension scrolls list what they can decipher into (random within the scroll's tier).
 

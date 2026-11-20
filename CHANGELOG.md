@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.32.0
+- **Thorium Brotherhood** (new, under Reputation): hover Master Smith Burninate in Searing Gorge for what it takes to reach each standing above yours, with the auction house cost. Below Friendly: the turn-ins of Restoring Fiery Flux Supplies (2 Incendosaur Scale + 1 Coal, and 4 Kingsblood, 4 Iron Bar or 10 Heavy Leather), each way priced and the cheapest in green. From Friendly: Dark Iron Residue for Gaining Acceptance (4 each) to Honored, Revered and Exalted, plus how far the residue in your bags gets you. 25 rep a hand-in, +10% for Humans. Where residue stops giving rep isn't listed for Forever, so it's counted all the way to Exalted.
+- New file: restart the game client once (a /reload won't load it).
+
 ## 0.31.0
 - **Neutral auction prices** (new, under Other, off until you tick it): a **Neutral AH** line under Auctionator's Auction line with the price at the neutral auction houses (Booty Bay, Gadgetzan, Everlook), from AuctionatorSync's neutral price list. Follows Auctionator's stack price (Shift) and shows the age when it's a day or more old. Requires AuctionatorSync v1.4.3 or later.
 - New file: restart the game client once (a /reload won't load it).
