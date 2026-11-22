@@ -112,6 +112,7 @@ ns.AddModule({
       end
       if best then best.best = true end
     end
+    local flux = #lines
 
     -- Gaining Acceptance from Friendly (or where you are now) to each standing after it
     local from = math.max(rep, FRIENDLY)
@@ -126,6 +127,8 @@ ns.AddModule({
         }
       end
     end
+    -- a rule between the Flux block and the residue rows, when both show
+    if flux > 0 and #lines > flux then table.insert(lines, flux + 1, { divider = true }) end
     local have = Bags(RESIDUE)
     if have >= RESIDUES then
       local n = math.floor(have / RESIDUES)
@@ -139,7 +142,9 @@ ns.AddModule({
     end
     ns.MoneyHeader(tooltip, name .. " reputation", { "cost" }, { gold }, 1, 0.82, 0)
     for _, l in ipairs(lines) do
-      if not l.money then
+      if l.divider then
+        ns.Divider(tooltip, 8)
+      elseif not l.money then
         tooltip:AddLine(l.text, 1, 1, 1)
       elseif l.cost then
         if l.best then

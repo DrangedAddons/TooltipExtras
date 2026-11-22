@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.32.2
+- Thorium Brotherhood: a thin line and a little space between the Flux hand-ins and the Dark Iron Residue rows.
+
 ## 0.32.1
 - Thorium Brotherhood: Incendosaur Scale and Coal get their own priced lines, and each Flux way (Kingsblood, Iron Bar, Heavy Leather) is priced on its own item. Before, one missing price (usually the scales) showed "no price" on all three ways.
 

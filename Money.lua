@@ -103,6 +103,35 @@ end
 
 -- Adds the line with a spacer and returns its overlay, with each column's anchor frame placed
 -- (right to left from the line's right edge) and everything in it hidden.
+-- A thin rule across the tooltip on a short line of its own, height pixels tall (default 8),
+-- to split one block of lines from the next.
+function ns.Divider(tooltip, height)
+  height = height or 8
+  tooltip:AddLine("|T" .. SPACER .. ":" .. height .. ":1|t")
+  local left = tooltip:GetName() and _G[tooltip:GetName() .. "TextLeft" .. tooltip:NumLines()]
+  if not left then return end
+  local o = Overlay(tooltip)
+  for _, col in pairs(o.cols) do
+    col.anchor:Hide()
+    col.label:Hide()
+    for i = 1, 3 do
+      col.text[i]:Hide()
+      col.icon[i]:Hide()
+    end
+  end
+  o:ClearAllPoints()
+  o:SetPoint("LEFT", left, "LEFT", 0, 0)
+  o:SetPoint("RIGHT", tooltip, "RIGHT", -10, 0)
+  o:SetHeight(1)
+  if not o.divider then
+    o.divider = o:CreateTexture(nil, "OVERLAY")
+    o.divider:SetAllPoints()
+  end
+  o.divider:SetColorTexture(1, 1, 1, 0.2)
+  o.divider:Show()
+  o:Show()
+end
+
 local function PlaceLine(tooltip, left, L, lr, lg, lb)
   tooltip:AddDoubleLine(left, "|T" .. SPACER .. ":" .. L.size .. ":" .. L.total .. "|t", lr, lg, lb, 1, 1, 1)
   local right = tooltip:GetName() and _G[tooltip:GetName() .. "TextRight" .. tooltip:NumLines()]
@@ -111,6 +140,7 @@ local function PlaceLine(tooltip, left, L, lr, lg, lb)
   o:ClearAllPoints()
   o:SetPoint("RIGHT", right, "RIGHT", 0, 0)
   o:SetSize(L.total, L.size)
+  if o.divider then o.divider:Hide() end
   for _, col in pairs(o.cols) do
     col.anchor:Hide()
     col.label:Hide()
