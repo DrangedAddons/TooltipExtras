@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.32.3
+- Thorium Brotherhood: the Flux block now reads "To Friendly (you're at 700 / 3,000 Neutral)", with the turn-ins and items indented under it, so it's clear those costs only get you to Friendly. The residue rows read "To Honored" and so on, "counted from Friendly".
+
 ## 0.32.2
 - Thorium Brotherhood: a thin line and a little space between the Flux hand-ins and the Dark Iron Residue rows.
 

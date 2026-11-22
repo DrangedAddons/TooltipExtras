@@ -95,18 +95,20 @@ ns.AddModule({
     local lines = {}
     if rep < FRIENDLY then
       local n = math.ceil((FRIENDLY - rep) / per)
-      lines[#lines + 1] = { text = "Friendly: " .. Turnins(n) .. " of Restoring Fiery Flux Supplies" }
+      lines[#lines + 1] = { text = "To Friendly |cff808080(you're at " .. Commas(math.floor(rep)) .. " / "
+        .. Commas(FRIENDLY) .. " Neutral)|r" }
+      lines[#lines + 1] = { text = "  " .. Turnins(n) .. " of Restoring Fiery Flux Supplies:" }
       -- Every way needs the scales and coal, so they get their own lines and each way is priced
       -- on its own reagent: one missing price doesn't blank the whole row.
-      lines[#lines + 1] = { text = "  " .. Commas(n * SCALES) .. " " .. (ns.ItemName(SCALE) or "Incendosaur Scale"),
+      lines[#lines + 1] = { text = "    " .. Commas(n * SCALES) .. " " .. (ns.ItemName(SCALE) or "Incendosaur Scale"),
         cost = Cost({ { SCALE, n * SCALES } }), money = true }
-      lines[#lines + 1] = { text = "  " .. Commas(n * COALS) .. " " .. (ns.ItemName(COAL) or "Coal"),
+      lines[#lines + 1] = { text = "    " .. Commas(n * COALS) .. " " .. (ns.ItemName(COAL) or "Coal"),
         cost = Cost({ { COAL, n * COALS } }), money = true }
-      lines[#lines + 1] = { text = "  |cff808080and one of:|r" }
+      lines[#lines + 1] = { text = "    |cff808080and one of:|r" }
       local best
       for _, f in ipairs(FLUX) do
         local cost = Cost({ { f.id, n * f.count } })
-        lines[#lines + 1] = { text = "    " .. Commas(n * f.count) .. " " .. (ns.ItemName(f.id) or f.name),
+        lines[#lines + 1] = { text = "      " .. Commas(n * f.count) .. " " .. (ns.ItemName(f.id) or f.name),
           cost = cost, money = true }
         if cost and (not best or cost < best.cost) then best = lines[#lines] end
       end
@@ -121,8 +123,8 @@ ns.AddModule({
       if s[2] > from then
         local n = math.ceil((s[2] - from) / per)
         lines[#lines + 1] = {
-          text = s[1] .. ": " .. Commas(n * RESIDUES) .. " " .. residue .. " |cff808080("
-            .. Turnins(n) .. (rep < FRIENDLY and ", after Friendly)|r" or ")|r"),
+          text = "To " .. s[1] .. ": " .. Commas(n * RESIDUES) .. " " .. residue .. " |cff808080("
+            .. Turnins(n) .. (rep < FRIENDLY and ", counted from Friendly)|r" or ")|r"),
           cost = Cost({ { RESIDUE, n * RESIDUES } }), money = true,
         }
       end
