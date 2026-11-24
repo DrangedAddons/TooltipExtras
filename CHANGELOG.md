@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.35.0
+- Quest items: keys and other soulbound unique items that can't be equipped (Lamora's Key, Gemstone of Bloodaxe) now get a line too. They can be blue (needed), pale blue (quest not picked up) or orange (no quest in your log uses it / its quests are done), but never red: a key may still open a door.
+- Quest items: your quest log is checked for every item, so an item a quest in your log needs shows **Needed for** even when it isn't a Quest Item, and even before the Questie list has finished building. Objective names must match the item exactly, so Linen Cloth doesn't match Bolt of Linen Cloth.
+- Quest items: if Questie isn't ready a few seconds after login, the list build retries for about a minute.
+- **/tte quest** shows whether the Questie list is built; **/tte quest <itemID>** shows which quests use that item and what your quest log matches.
+
 ## 0.34.0
 - Quest items: every item with a "Quest Item" line now gets a line, even ones Questie doesn't know (Forever's own quests).
   - Your quest log is checked directly too: an objective naming the item shows **Needed for <quest>**, and the item a quest gives you to use shows **Used for <quest>** (blue).

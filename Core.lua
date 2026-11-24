@@ -225,6 +225,11 @@ SlashCmdList.TOOLTIPEXTRAS = function(msg)
       .. ". Line hook API: " .. tostring(TooltipDataProcessor and TooltipDataProcessor.AddLinePreCall ~= nil))
     return
   end
+  local sub, rest = (msg or ""):match("^%s*(%S+)%s*(.-)%s*$")
+  if sub and ns.slash and ns.slash[sub:lower()] then
+    ns.slash[sub:lower()](rest)
+    return
+  end
   ns.OpenOptions()
 end
 
