@@ -186,7 +186,9 @@ end
 MODULE.OnItem = function(tooltip, id, db)
   if db.show == false or not index then return false end
   local quests = index[id]
+  -- Questie stores 0, not nil, for items that start nothing
   local starts = ItemField(id, "startQuest")
+  if type(starts) ~= "number" or starts <= 0 then starts = nil end
   if not quests and not starts then return false end
   local classID = select(6, C_Item and C_Item.GetItemInfoInstant and C_Item.GetItemInfoInstant(id)
     or GetItemInfoInstant(id))
@@ -208,7 +210,7 @@ MODULE.OnItem = function(tooltip, id, db)
     end
   end
 
-  if type(starts) == "number" and not Done(starts) and not OnQuest(starts) and ForMe(starts) then
+  if starts and not Done(starts) and not OnQuest(starts) and ForMe(starts) then
     lines[#lines + 1] = { "Starts a quest: " .. QuestName(starts), 0.2, 0.8, 1 }
     open = true
   end

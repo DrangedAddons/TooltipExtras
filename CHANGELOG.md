@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.33.3
+- Quest items: fixed "Starts a quest: quest 0" on lots of items. Questie stores 0 for items that start no quest, and that was read as a quest. The same bug could also mark normal items "safe to delete".
+
 ## 0.33.2
 - Quest items: new colours that don't blend into normal tooltip text. Bright blue when a quest needs the item (in your log, or it starts one), pale blue for a quest you haven't picked up, red for safe to delete, grey when you already have enough.
 
