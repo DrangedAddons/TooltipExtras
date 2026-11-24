@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.33.0
+- **Quest items** (new, under Quests, needs Questie): one line on item tooltips.
+  - **Needed for <quest> (3/5)** when a quest in your log wants the item. Grey once that objective is done.
+  - **Starts a quest: <quest>** on quest starter items you haven't done.
+  - **Quest item: <quest> (not picked up)** on quest-only items whose quest you haven't done and isn't in your log.
+  - **Quest leftover: safe to delete** on quest-only items every quest of which is done, or is for another race, class or faction, or lost to a pick-one quest you took instead.
+  - Normal items (cloth, bars, herbs) only get the "Needed for" line and are never called leftovers. Items Questie doesn't know get no line.
+- The item-to-quest list is built from Questie's database a few seconds after login, so the line appears shortly after you log in.
+- New file: restart the game client once (a /reload won't load it).
+
 ## 0.32.3
 - Thorium Brotherhood: the Flux block now reads "To Friendly (you're at 700 / 3,000 Neutral)", with the turn-ins and items indented under it, so it's clear those costs only get you to Friendly. The residue rows read "To Honored" and so on, "counted from Friendly".
 

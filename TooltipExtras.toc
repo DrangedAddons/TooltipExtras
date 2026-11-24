@@ -1,12 +1,12 @@
 ## Interface: 16001
 ## Title: TooltipExtras
-## Notes: Profit lines on item tooltips, per profession: essence combine/split and disenchant value (Enchanting), ore to bar (Mining), cloth to bolt (Tailoring), leather upgrades and cured hides (Leatherworking), stone to blasting powder (Engineering), stone to grinding stone (Blacksmithing); best zones and schools for raw fish (Fishing); Darkmoon Faire ticket hand-ins ranked by cost; Green Hills of Stranglethorn page costs; Runecloth to each rep standing at cloth quartermasters; Thorium Brotherhood hand-ins at Master Smith Burninate; what mage Comprehension scrolls decipher into; priced reagent lists on recipe links for every profession; chat link tooltips on hover; Alt+click bag items to total their worth. Prices from Auctionator.
+## Notes: Profit lines on item tooltips, per profession: essence combine/split and disenchant value (Enchanting), ore to bar (Mining), cloth to bolt (Tailoring), leather upgrades and cured hides (Leatherworking), stone to blasting powder (Engineering), stone to grinding stone (Blacksmithing); best zones and schools for raw fish (Fishing); Darkmoon Faire ticket hand-ins ranked by cost; Green Hills of Stranglethorn page costs; Runecloth to each rep standing at cloth quartermasters; Thorium Brotherhood hand-ins at Master Smith Burninate; what mage Comprehension scrolls decipher into; whether a quest still needs an item or it's a leftover you can delete (Questie); priced reagent lists on recipe links for every profession; chat link tooltips on hover; Alt+click bag items to total their worth. Prices from Auctionator.
 ## Author: Dranged
-## Version: 0.32.3
+## Version: 0.33.0
 ## X-DrangedAddons-Games: _forever_
 ## X-DrangedHub-Page: TooltipExtras
 ## X-DrangedHub-Open: /tooltipextras
-## OptionalDeps: Auctionator, AuctionatorSync, Chattynator, Baganator, EllesmereUIBags
+## OptionalDeps: Auctionator, AuctionatorSync, Chattynator, Baganator, EllesmereUIBags, Questie, QuestieDB
 ## SavedVariables: TooltipExtrasDB
 ## SavedVariablesPerCharacter: TooltipExtrasCharDB
 ## IconTexture: Interface\AddOns\TooltipExtras\icon
@@ -32,6 +32,7 @@ Engineering.lua
 Fishing.lua
 Essences.lua
 GreenHills.lua
+QuestItems.lua
 Leatherworking.lua
 MageScrolls.lua
 Mining.lua
