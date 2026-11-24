@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.38.0
+- Items to keep: the window shows your items as tiles, like a bag, under **Bags**, **Bank** and **Kept, not carried** (greyed). Each tile's border is its status colour (blue kept or needed, pale blue quest not picked up, orange no quest uses it, red safe to delete), and a tick marks items on your keep list. Hover a tile for its tooltip, click to select, Shift-click for a range.
+- Items to keep: opening it from the /dranged window or Options closes that window, so the two don't overlap.
+- Items to keep: if the window can't fill in, it now says why in chat instead of staying blank.
+
 ## 0.37.0
 - Items to keep: the window now lists what's in your bags and bank, so you pick from your own items instead of typing them in.
   - Show **Quest and unique items** (default), **Everything** or **Kept items**, and search by name.

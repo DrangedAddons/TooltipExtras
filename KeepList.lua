@@ -129,18 +129,45 @@ local function BankItems()
 end
 
 ----------------------------------------------------------------------------------------------
--- Window: everything in your bags and bank, pick rows, then Keep / Don't keep.
+-- Window: your bags and bank as item tiles. Click tiles to select, then Keep / Don't keep.
+-- A tile's border is its status colour, the same as the tooltip line.
 
-local ROW_H, ROWS = 22, 16
+local TILE, GAP = 38, 5
 local WHITE = "Interface\\Buttons\\WHITE8X8"
 local KEY_CLASS = 13
 
+local function Border(tile, size)
+  local t = {}
+  for i, side in ipairs({ "TOP", "BOTTOM", "LEFT", "RIGHT" }) do
+    local tx = tile:CreateTexture(nil, "OVERLAY")
+    tx:SetTexture(WHITE)
+    if i <= 2 then
+      tx:SetPoint(side .. "LEFT")
+      tx:SetPoint(side .. "RIGHT")
+      tx:SetHeight(size)
+    else
+      tx:SetPoint("TOP" .. side)
+      tx:SetPoint("BOTTOM" .. side)
+      tx:SetWidth(size)
+    end
+    t[i] = tx
+  end
+  return t
+end
+
+local function Color(edges, r, g, b, a)
+  for _, tx in ipairs(edges) do
+    if r then tx:SetVertexColor(r, g, b, a or 1); tx:Show() else tx:Hide() end
+  end
+end
+
 local function Build()
-  local f = UI.Window({ name = "TooltipExtrasKeep", title = "Items to keep", width = 780, height = 600 })
+  local f = UI.Window({ name = "TooltipExtrasKeep", title = "Items to keep", width = 780, height = 620 })
   local body = f.body
   local filter, search, selected, last = "quest", "", {}, nil
+  local data = {}
 
-  local help = UI.Text(body, "Click rows to select them (Shift-click for a range), then Keep or "
+  local help = UI.Text(body, "Click items to select them (Shift-click for a range), then Keep or "
     .. "Don't keep. Kept items say so on their tooltip and never show as a leftover.",
     "GameFontHighlightSmall")
   help:SetPoint("TOPLEFT", 0, 0)
@@ -179,25 +206,23 @@ local function Build()
   bankNote:SetPoint("RIGHT", body, "RIGHT", 0, 0)
   bankNote:SetJustifyH("RIGHT")
 
-  local list
-  local function Render(row, e)
-    local text = e.link or e.name
-    local count = {}
-    if e.bags > 0 then count[#count + 1] = e.bags .. " in bags" end
-    if e.bank > 0 then count[#count + 1] = e.bank .. " in bank" end
-    if #count > 0 then text = text .. "  |cff808080" .. table.concat(count, ", ") .. "|r" end
-    UI.RenderRow(row, text, e.icon)
-    row.mark:SetShown(selected[e.id] == true)
-    local st = e.status
-    if st then
-      row.status:SetText(st[1])
-      row.status:SetTextColor(st[2], st[3], st[4])
-    else
-      row.status:SetText("")
-    end
-  end
-  local function Click(_, e)
-    local data = list.data
+  -- the grid
+  local box = CreateFrame("Frame", nil, body, "BackdropTemplate")
+  UI.Backdrop(box, 0.03, 0.03, 0.035, 0.95)
+  box:SetPoint("TOPLEFT", 0, -56)
+  box:SetPoint("RIGHT", body, "RIGHT", 0, 0)
+  box:SetHeight(390)
+  local inner = CreateFrame("Frame", nil, box)
+  inner:SetPoint("TOPLEFT", 6, -6)
+  inner:SetPoint("BOTTOMRIGHT", -4, 6)
+  local scroll, content = UI.ScrollArea(inner, 720)
+  local empty = UI.Text(box, "Nothing here.", "GameFontDisable")
+  empty:SetPoint("TOP", 0, -30)
+
+  local tiles, heads = {}, {}
+  local ar, ag, ab = ns.AccentColor()
+
+  local function Select(e)
     local at
     for i, d in ipairs(data) do if d == e then at = i break end end
     if IsShiftKeyDown() and last and at then
@@ -207,49 +232,143 @@ local function Build()
       selected[e.id] = not selected[e.id] or nil
     end
     last = at
-    f.Count()
-    list:Update()
+    f.Paint()
   end
-  list = UI.List(body, 744, ROW_H, ROWS, Render, Click)
-  list:SetPoint("TOPLEFT", 0, -56)
-  local ar, ag, ab = ns.AccentColor()
-  for _, r in ipairs(list.rows) do
-    r.mark = r:CreateTexture(nil, "BACKGROUND")
-    r.mark:SetAllPoints()
-    r.mark:SetTexture(WHITE)
-    r.mark:SetVertexColor(ar, ag, ab, 0.3)
-    r.mark:Hide()
-    r.status = UI.Text(r, "", "GameFontHighlightSmall")
-    r.status:SetPoint("RIGHT", -6, 0)
-    r.status:SetWidth(300)
-    r.status:SetJustifyH("RIGHT")
-    r.status:SetWordWrap(false)
-    r.text:SetPoint("RIGHT", r.status, "LEFT", -8, 0)
-    r:SetScript("OnEnter", function(self)
-      if not self.item then return end
+
+  local function Tile(i)
+    local t = tiles[i]
+    if t then return t end
+    t = CreateFrame("Button", nil, content)
+    t:SetSize(TILE, TILE)
+    t.bg = t:CreateTexture(nil, "BACKGROUND")
+    t.bg:SetAllPoints()
+    t.bg:SetColorTexture(0.1, 0.1, 0.11, 1)
+    t.icon = t:CreateTexture(nil, "ARTWORK")
+    t.icon:SetPoint("TOPLEFT", 2, -2)
+    t.icon:SetPoint("BOTTOMRIGHT", -2, 2)
+    t.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+    t.sel = t:CreateTexture(nil, "OVERLAY")
+    t.sel:SetAllPoints(t.icon)
+    t.sel:SetTexture(WHITE)
+    t.sel:SetVertexColor(ar, ag, ab, 0.35)
+    t.status = Border(t, 2)
+    t.selEdge = Border(t, 2)
+    for _, tx in ipairs(t.selEdge) do tx:SetDrawLayer("OVERLAY", 2) end
+    t.count = t:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
+    t.count:SetPoint("BOTTOMRIGHT", -3, 3)
+    t.kept = t:CreateTexture(nil, "OVERLAY")
+    t.kept:SetSize(14, 14)
+    t.kept:SetPoint("TOPRIGHT", 1, 1)
+    t.kept:SetTexture("Interface\\Buttons\\UI-CheckBox-Check")
+    t:SetHighlightTexture(WHITE)
+    t:GetHighlightTexture():SetVertexColor(1, 1, 1, 0.12)
+    t:RegisterForClicks("LeftButtonUp")
+    t:SetScript("OnClick", function(self) if self.e then Select(self.e) end end)
+    t:SetScript("OnEnter", function(self)
+      if not self.e then return end
       GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-      GameTooltip:SetItemByID(self.item.id)
+      GameTooltip:SetItemByID(self.e.id)
       GameTooltip:Show()
     end)
-    r:SetScript("OnLeave", GameTooltip_Hide)
+    t:SetScript("OnLeave", GameTooltip_Hide)
+    tiles[i] = t
+    return t
   end
 
-  local empty = UI.Text(body, "Nothing here.", "GameFontDisable")
-  empty:SetPoint("TOP", list, "TOP", 0, -20)
+  local function Head(i)
+    local h = heads[i]
+    if not h then
+      h = content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+      heads[i] = h
+    end
+    return h
+  end
+
+  function f.Paint()
+    local n = 0
+    for _, t in ipairs(tiles) do
+      local e = t:IsShown() and t.e
+      if e then
+        local on = selected[e.id] == true
+        t.sel:SetShown(on)
+        Color(t.selEdge, on and 1 or nil, 1, 1, 1)
+      end
+    end
+    for _ in pairs(selected) do n = n + 1 end
+    f.count:SetText(n > 0 and (n .. " selected") or "")
+  end
+
+  -- sections in order; each item sits in the first that has it
+  local SECTIONS = { { "bags", "Bags" }, { "bank", "Bank" }, { "away", "Kept, not carried" } }
+
+  function f.Layout()
+    local width = content:GetWidth()
+    local cols = math.max(1, math.floor((width + GAP) / (TILE + GAP)))
+    local y, ti, hi = 0, 0, 0
+    for _, sec in ipairs(SECTIONS) do
+      local any = false
+      for _, e in ipairs(data) do
+        if e.where == sec[1] then any = true break end
+      end
+      if any then
+        hi = hi + 1
+        local h = Head(hi)
+        h:SetText(sec[2])
+        h:ClearAllPoints()
+        h:SetPoint("TOPLEFT", 0, -y)
+        h:Show()
+        y = y + 20
+        local col = 0
+        for _, e in ipairs(data) do
+          if e.where == sec[1] then
+            ti = ti + 1
+            local t = Tile(ti)
+            t.e = e
+            t:ClearAllPoints()
+            t:SetPoint("TOPLEFT", col * (TILE + GAP), -y)
+            t.icon:SetTexture(e.icon or 134400)
+            t.icon:SetDesaturated(e.where == "away")
+            local total = e.bags + e.bank
+            t.count:SetText(total > 1 and total or "")
+            local st = e.status
+            if st then Color(t.status, st[2], st[3], st[4], 1) else Color(t.status, nil) end
+            t.kept:SetShown(e.kept)
+            t:Show()
+            col = col + 1
+            if col >= cols then
+              col = 0
+              y = y + TILE + GAP
+            end
+          end
+        end
+        if col > 0 then y = y + TILE + GAP end
+        y = y + 8
+      end
+    end
+    for i = ti + 1, #tiles do tiles[i]:Hide(); tiles[i].e = nil end
+    for i = hi + 1, #heads do heads[i]:Hide() end
+    scroll:SetContentHeight(math.max(y, 10))
+    empty:SetShown(ti == 0)
+    f.Paint()
+  end
 
   -- actions
-  local count = UI.Text(body, "", "GameFontNormalSmall")
-  count:SetPoint("TOPLEFT", list, "BOTTOMLEFT", 2, -10)
+  f.count = UI.Text(body, "", "GameFontNormalSmall")
+  f.count:SetPoint("TOPLEFT", box, "BOTTOMLEFT", 2, -8)
+  local legend = UI.Text(body, "Border: |cff33ccffblue|r kept or needed, |cff99bfe6pale blue|r quest not "
+    .. "picked up, |cffff9933orange|r no quest uses it, |cffff4040red|r safe to delete. "
+    .. "Tick: on your keep list.", "GameFontHighlightSmall")
+  legend:SetPoint("TOPRIGHT", box, "BOTTOMRIGHT", 0, -8)
+  legend:SetJustifyH("RIGHT")
+
   local all = UI.Button(body, "Select all", 100, 22, function()
-    for _, e in ipairs(list.data) do selected[e.id] = true end
-    f.Count()
-    list:Update()
+    for _, e in ipairs(data) do selected[e.id] = true end
+    f.Paint()
   end)
-  all:SetPoint("TOPLEFT", list, "BOTTOMLEFT", 0, -28)
+  all:SetPoint("TOPLEFT", box, "BOTTOMLEFT", 0, -28)
   local none = UI.Button(body, "Select none", 100, 22, function()
     wipe(selected)
-    f.Count()
-    list:Update()
+    f.Paint()
   end)
   none:SetPoint("LEFT", all, "RIGHT", 6, 0)
 
@@ -300,55 +419,66 @@ local function Build()
   bind:SetPoint("RIGHT", body, "RIGHT", 0, 0)
   bind:SetJustifyH("LEFT")
 
-  function f.Count()
-    local n = 0
-    for _ in pairs(selected) do n = n + 1 end
-    count:SetText(n > 0 and (n .. " selected") or "")
+  local function Entry(id, bags, bank)
+    local info = C_Item and C_Item.GetItemInfoInstant or GetItemInfoInstant
+    local name, link, _, _, _, _, _, stack, _, _, _, _, _, bindType = GetItemInfo(id)
+    local _, _, _, equipLoc, icon, classID = info(id)
+    local b, k = bags[id], bank[id]
+    local bound = (b and b.bound) or (k and k.bound) or bindType == 1 or bindType == 4
+    local unique = stack == 1
+    local kept = DB()[id] ~= nil
+    local lines, questLike = {}, false
+    if ns.QuestStatus then
+      local ok, l, q = pcall(ns.QuestStatus, id, classID == 12 or bindType == 4, bound, unique)
+      if ok then lines, questLike = l or {}, q end
+    end
+    local e = {
+      id = id, name = name or ("item " .. id), icon = icon, kept = kept,
+      bags = b and b.n or 0, bank = k and k.n or 0, status = lines[1],
+      where = b and "bags" or k and "bank" or "away",
+    }
+    local show
+    if filter == "kept" then show = kept
+    elseif filter == "quest" then
+      show = kept or questLike or #lines > 0
+        or (bound and (equipLoc == nil or equipLoc == "") and (unique or classID == KEY_CLASS))
+    else show = true end
+    if show and search ~= "" and not e.name:lower():find(search, 1, true) then show = false end
+    return show and e or nil
   end
 
-  function f.Update()
+  local warned
+  local function Update()
     local bags = Scan(BagIDs(), {})
     local bank, seen = BankItems()
+    bankNote:SetText(atBank and "Bank: open now"
+      or seen and ("Bank: as of your last visit, " .. date("%d %b %H:%M", seen))
+      or "Bank: open it once to list it")
     local ids = {}
     for id in pairs(bags) do ids[id] = true end
     for id in pairs(bank) do ids[id] = true end
     for id in pairs(DB()) do ids[id] = true end
-    local info = C_Item and C_Item.GetItemInfoInstant or GetItemInfoInstant
-    local data = {}
+    data = {}
     for id in pairs(ids) do
-      local name, link, _, _, _, _, _, stack, _, _, _, _, _, bindType = GetItemInfo(id)
-      local _, _, _, equipLoc, icon, classID = info(id)
-      local b, k = bags[id], bank[id]
-      local bound = (b and b.bound) or (k and k.bound) or bindType == 1 or bindType == 4
-      local questItem = classID == 12 or bindType == 4
-      local unique = stack == 1
-      local kept = DB()[id]
-      local lines, questLike = {}, false
-      if ns.QuestStatus then lines, questLike = ns.QuestStatus(id, questItem, bound, unique) end
-      local e = {
-        id = id, name = name or ("item " .. id), link = link, icon = icon,
-        bags = b and b.n or 0, bank = k and k.n or 0, status = lines[1],
-      }
-      local show
-      if filter == "kept" then show = kept ~= nil
-      elseif filter == "quest" then
-        show = kept ~= nil or questLike or #lines > 0
-          or (bound and (equipLoc == nil or equipLoc == "") and (unique or classID == KEY_CLASS))
-      else show = true end
-      if show and search ~= "" and not e.name:lower():find(search, 1, true) then show = false end
-      if show then data[#data + 1] = e end
+      local e = Entry(id, bags, bank)
+      if e then data[#data + 1] = e end
     end
-    table.sort(data, function(a, c) return a.name < c.name end)
-    -- drop selections that are filtered out, so Keep only touches rows you can see
+    table.sort(data, function(a, c)
+      if a.name ~= c.name then return a.name < c.name end
+      return a.id < c.id
+    end)
+    -- drop selections that are filtered out, so Keep only touches what you can see
     local visible = {}
     for _, e in ipairs(data) do visible[e.id] = true end
     for id in pairs(selected) do if not visible[id] then selected[id] = nil end end
-    list:SetData(data)
-    empty:SetShown(#data == 0)
-    bankNote:SetText(atBank and "Bank: open now"
-      or seen and ("Bank: as of your last visit, " .. date("%d %b %H:%M", seen))
-      or "Bank: open it once to list it")
-    f.Count()
+    f.Layout()
+  end
+  function f.Update()
+    local ok, err = pcall(Update)
+    if not ok and not warned then
+      warned = true
+      Say("keep window failed: " .. tostring(err))
+    end
   end
   f:HookScript("OnShow", function()
     wipe(selected)
@@ -390,6 +520,9 @@ bankEvents:SetScript("OnEvent", function(_, event)
 end)
 
 function ns.OpenKeepList()
+  -- opened from the /dranged window or Options: close that, so the two don't overlap
+  if DrangedAddonsFrame and DrangedAddonsFrame:IsShown() then DrangedAddonsFrame:Hide() end
+  if SettingsPanel and SettingsPanel:IsShown() then HideUIPanel(SettingsPanel) end
   window = window or Build()
   window:Show()
 end
