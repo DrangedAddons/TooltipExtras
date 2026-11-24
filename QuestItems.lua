@@ -11,6 +11,9 @@
 --                                 quest-only item, every quest that wants it is done
 -- Normal items (cloth, bars, herbs) only get the first line: they're never called leftovers.
 -- Items Questie doesn't know get no line.
+--
+-- Colours: gold = still needed, orange = starts a quest, blue = for a quest you haven't
+-- picked up, green = safe to delete, grey = needed but that objective is already done.
 local ADDON, ns = ...
 
 local QUEST_CLASS = 12 -- Enum.ItemClass.Questitem
@@ -22,7 +25,9 @@ local MODULE = {
   label = "Quest items",
   tip = "On item tooltips: whether a quest in your log needs the item (with your count), whether it "
     .. "starts a quest, or whether it's a quest item left over from quests you've finished and can "
-    .. "be deleted. Needs Questie.",
+    .. "be deleted. Shown right under the item name (or its Quest Item line). Gold: still needed. "
+    .. "Orange: starts a quest. Blue: for a quest you haven't picked up. Green: safe to delete. "
+    .. "Grey: needed, but you already have enough. Needs Questie.",
   options = { { key = "show", label = "Quest needed / leftover line", default = true } },
 }
 ns.AddModule(MODULE)
@@ -145,6 +150,38 @@ local function Sorted(set)
   return list
 end
 
+-- Puts text right under the item name, or under the "Quest Item" line when there is one.
+-- A tooltip can't insert a line mid-way, so the text joins an existing line with a newline:
+-- after the Quest Item line, or before line 2. The lines below keep their own FontStrings, so
+-- anything anchored to them stays put.
+local function Place(tooltip, text)
+  local name = tooltip.GetName and tooltip:GetName()
+  local n = tooltip.NumLines and tooltip:NumLines() or 0
+  if not name or n < 2 then
+    tooltip:AddLine(text)
+    return
+  end
+  local questLabel = ITEM_BIND_QUEST or "Quest Item"
+  for i = 2, math.min(n, 5) do
+    local fs = _G[name .. "TextLeft" .. i]
+    local t = fs and fs:GetText()
+    if t and t:find(text, 1, true) then return end -- already placed on this build
+    if t == questLabel then
+      fs:SetText(t .. "\n" .. text)
+      return
+    end
+  end
+  local fs = _G[name .. "TextLeft2"]
+  local t = fs and fs:GetText()
+  if not fs then
+    tooltip:AddLine(text)
+  elseif t and t ~= "" then
+    fs:SetText(text .. "\n" .. t)
+  else
+    fs:SetText(text)
+  end
+end
+
 MODULE.OnItem = function(tooltip, id, db)
   if db.show == false or not index then return false end
   local quests = index[id]
@@ -171,15 +208,15 @@ MODULE.OnItem = function(tooltip, id, db)
   end
 
   if type(starts) == "number" and not Done(starts) and not OnQuest(starts) and ForMe(starts) then
-    lines[#lines + 1] = { "Starts a quest: " .. QuestName(starts), 1, 0.82, 0 }
+    lines[#lines + 1] = { "Starts a quest: " .. QuestName(starts), 1, 0.55, 0 }
     open = true
   end
 
   if not open and questOnly then
     if #waiting > 0 then
       for k = 1, math.min(#waiting, 3) do
-        lines[#lines + 1] = { "Quest item: " .. QuestName(waiting[k]) .. " |cff808080(not picked up)|r",
-          1, 0.82, 0 }
+        lines[#lines + 1] = { "Quest item: " .. QuestName(waiting[k]) .. " (not picked up)",
+          0.55, 0.75, 1 }
       end
     else
       lines[#lines + 1] = { "Quest leftover: safe to delete", 0.2, 1, 0.2 }
@@ -187,7 +224,11 @@ MODULE.OnItem = function(tooltip, id, db)
   end
 
   if #lines == 0 then return false end
-  for _, l in ipairs(lines) do tooltip:AddLine(l[1], l[2], l[3], l[4]) end
+  local parts = {}
+  for k, l in ipairs(lines) do
+    parts[k] = string.format("|cff%02x%02x%02x%s|r", l[2] * 255, l[3] * 255, l[4] * 255, l[1])
+  end
+  Place(tooltip, table.concat(parts, "\n"))
   return true
 end
 

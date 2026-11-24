@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.33.1
+- Quest items: the line now sits right under the item name, or under the item's "Quest Item" line, instead of at the bottom.
+- Each kind of line has its own colour: gold for still needed, orange for starts a quest, blue for a quest you haven't picked up, green for safe to delete, grey for needed but you already have enough.
+
 ## 0.33.0
 - **Quest items** (new, under Quests, needs Questie): one line on item tooltips.
   - **Needed for <quest> (3/5)** when a quest in your log wants the item. Grey once that objective is done.
