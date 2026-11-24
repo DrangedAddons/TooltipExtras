@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.33.2
+- Quest items: new colours that don't blend into normal tooltip text. Bright blue when a quest needs the item (in your log, or it starts one), pale blue for a quest you haven't picked up, red for safe to delete, grey when you already have enough.
+
 ## 0.33.1
 - Quest items: the line now sits right under the item name, or under the item's "Quest Item" line, instead of at the bottom.
 - Each kind of line has its own colour: gold for still needed, orange for starts a quest, blue for a quest you haven't picked up, green for safe to delete, grey for needed but you already have enough.

@@ -12,8 +12,9 @@
 -- Normal items (cloth, bars, herbs) only get the first line: they're never called leftovers.
 -- Items Questie doesn't know get no line.
 --
--- Colours: gold = still needed, orange = starts a quest, blue = for a quest you haven't
--- picked up, green = safe to delete, grey = needed but that objective is already done.
+-- Colours: bright blue = a quest needs it (in your log, or it starts one), pale blue = for a
+-- quest you haven't picked up, red = safe to delete, grey = needed but you have enough.
+-- Gold, white, green and the item-quality blue are all taken by normal tooltip text.
 local ADDON, ns = ...
 
 local QUEST_CLASS = 12 -- Enum.ItemClass.Questitem
@@ -25,8 +26,8 @@ local MODULE = {
   label = "Quest items",
   tip = "On item tooltips: whether a quest in your log needs the item (with your count), whether it "
     .. "starts a quest, or whether it's a quest item left over from quests you've finished and can "
-    .. "be deleted. Shown right under the item name (or its Quest Item line). Gold: still needed. "
-    .. "Orange: starts a quest. Blue: for a quest you haven't picked up. Green: safe to delete. "
+    .. "be deleted. Shown right under the item name (or its Quest Item line). Bright blue: a quest needs it. "
+    .. "Pale blue: for a quest you haven't picked up. Red: safe to delete. "
     .. "Grey: needed, but you already have enough. Needs Questie.",
   options = { { key = "show", label = "Quest needed / leftover line", default = true } },
 }
@@ -200,7 +201,7 @@ MODULE.OnItem = function(tooltip, id, db)
       if finished then
         lines[#lines + 1] = { text, 0.5, 0.5, 0.5 }
       else
-        lines[#lines + 1] = { text, 1, 0.82, 0 }
+        lines[#lines + 1] = { text, 0.2, 0.8, 1 }
       end
     elseif not Done(q) and ForMe(q) then
       waiting[#waiting + 1] = q
@@ -208,7 +209,7 @@ MODULE.OnItem = function(tooltip, id, db)
   end
 
   if type(starts) == "number" and not Done(starts) and not OnQuest(starts) and ForMe(starts) then
-    lines[#lines + 1] = { "Starts a quest: " .. QuestName(starts), 1, 0.55, 0 }
+    lines[#lines + 1] = { "Starts a quest: " .. QuestName(starts), 0.2, 0.8, 1 }
     open = true
   end
 
@@ -216,10 +217,10 @@ MODULE.OnItem = function(tooltip, id, db)
     if #waiting > 0 then
       for k = 1, math.min(#waiting, 3) do
         lines[#lines + 1] = { "Quest item: " .. QuestName(waiting[k]) .. " (not picked up)",
-          0.55, 0.75, 1 }
+          0.6, 0.75, 0.9 }
       end
     else
-      lines[#lines + 1] = { "Quest leftover: safe to delete", 0.2, 1, 0.2 }
+      lines[#lines + 1] = { "Quest leftover: safe to delete", 1, 0.25, 0.25 }
     end
   end
 
