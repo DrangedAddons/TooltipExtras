@@ -257,15 +257,15 @@ local KEY_CLASS = 13
 
 local BLUE = { 0.2, 0.8, 1 }
 
-MODULE.OnItem = function(tooltip, id, db)
-  if db.show == false then return false end
+-- The lines for item id, as { text, r, g, b }, and whether it counts as quest-like.
+-- questLine / bound / unique come from the tooltip (OnItem) or the bag scan (the keep window).
+local function Status(id, questLine, bound, unique)
   local quests = index and index[id]
   -- Questie stores 0, not nil, for items that start nothing
   local starts = ItemField(id, "startQuest")
   if type(starts) ~= "number" or starts <= 0 then starts = nil end
   local info = C_Item and C_Item.GetItemInfoInstant or GetItemInfoInstant
   local _, _, _, equipLoc, _, classID = info(id)
-  local questLine, bound, unique = Flags(tooltip)
   -- quest-only: red "safe to delete" is allowed once Questie says its quests are done
   local questOnly = classID == QUEST_CLASS or starts ~= nil or questLine
   -- quest-like: soulbound, can't be equipped, and unique or a key (Lamora's Key, Gemstone of
@@ -331,6 +331,13 @@ MODULE.OnItem = function(tooltip, id, db)
     end
   end
 
+  return lines, questLike
+end
+ns.QuestStatus = Status
+
+MODULE.OnItem = function(tooltip, id, db)
+  if db.show == false then return false end
+  local lines = Status(id, Flags(tooltip))
   if #lines == 0 then return false end
   local parts = {}
   for k, l in ipairs(lines) do

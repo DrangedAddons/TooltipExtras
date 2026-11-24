@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.37.0
+- Items to keep: the window now lists what's in your bags and bank, so you pick from your own items instead of typing them in.
+  - Show **Quest and unique items** (default), **Everything** or **Kept items**, and search by name.
+  - Each row shows the item, how many are in your bags and bank, and its status on the right (kept with your note, needed for a quest, leftover...).
+  - Click rows to select them (Shift-click for a range, or Select all / Select none), add a note if you like, then **Keep** or **Don't keep**.
+  - The bank is read when you open it and remembered per character, so it lists even when you're away from the bank.
+
 ## 0.36.0
 - **Items to keep** (new): mark items you want to hang on to, like the Mallet of Zul'Farrak for the gong. A kept item's tooltip shows **On your keep list** (or **Keep: <your note>**) in blue, and Quest items never calls it a leftover.
   - Settings: **Edit keep list...** opens the list. Shift-click an item into the Item box (or type its ID), add a note if you like, then Add. Right-click a row to remove it.
