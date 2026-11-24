@@ -13,7 +13,7 @@
 -- Items Questie doesn't know get no line.
 --
 -- Colours: bright blue = a quest needs it (in your log, or it starts one), pale blue = for a
--- quest you haven't picked up, red = safe to delete, grey = needed but you have enough.
+-- quest you haven't picked up, red = safe to delete. Needed stays blue past the count (13/10).
 -- Gold, white, green and the item-quality blue are all taken by normal tooltip text.
 local ADDON, ns = ...
 
@@ -28,7 +28,7 @@ local MODULE = {
     .. "starts a quest, or whether it's a quest item left over from quests you've finished and can "
     .. "be deleted. Shown right under the item name (or its Quest Item line). Bright blue: a quest needs it. "
     .. "Pale blue: for a quest you haven't picked up. Red: safe to delete. "
-    .. "Grey: needed, but you already have enough. Needs Questie.",
+    .. "Needed stays blue even when you have more than enough. Needs Questie.",
   options = { { key = "show", label = "Quest needed / leftover line", default = true } },
 }
 ns.AddModule(MODULE)
@@ -131,6 +131,11 @@ local function ForMe(q)
   return true
 end
 
+local function Bags(id)
+  local get = C_Item and C_Item.GetItemCount or GetItemCount
+  return get and get(id) or 0
+end
+
 -- "3/5" for item in quest q's log objectives, matched by the item's name in the text
 local function Progress(q, id)
   local name = ns.ItemName(id) or ItemField(id, "name")
@@ -139,7 +144,9 @@ local function Progress(q, id)
   if type(objs) ~= "table" then return nil end
   for _, o in ipairs(objs) do
     if o.text and o.text:find(name, 1, true) and o.numRequired and o.numRequired > 0 then
-      return o.numFulfilled .. "/" .. o.numRequired, o.finished
+      -- the log caps numFulfilled at numRequired; show what's in the bags (13/10)
+      local have = math.max(Bags(id), o.numFulfilled or 0)
+      return have .. "/" .. o.numRequired
     end
   end
 end
@@ -198,13 +205,9 @@ MODULE.OnItem = function(tooltip, id, db)
   for _, q in ipairs(quests and Sorted(quests) or {}) do
     if OnQuest(q) then
       open = true
-      local p, finished = Progress(q, id)
-      local text = "Needed for " .. QuestName(q) .. (p and (" (" .. p .. ")") or "")
-      if finished then
-        lines[#lines + 1] = { text, 0.5, 0.5, 0.5 }
-      else
-        lines[#lines + 1] = { text, 0.2, 0.8, 1 }
-      end
+      -- blue even with more than enough: better to keep extras than invite a deleted stack
+      local p = Progress(q, id)
+      lines[#lines + 1] = { "Needed for " .. QuestName(q) .. (p and (" (" .. p .. ")") or ""), 0.2, 0.8, 1 }
     elseif not Done(q) and ForMe(q) then
       waiting[#waiting + 1] = q
     end

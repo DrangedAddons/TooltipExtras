@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.33.4
+- Quest items: a quest in your log keeps the line blue even when you have more than it needs, and the count shows what's in your bags (13/10). No more grey "you have enough": better to keep extras than delete a stack by mistake.
+
 ## 0.33.3
 - Quest items: fixed "Starts a quest: quest 0" on lots of items. Questie stores 0 for items that start no quest, and that was read as a quest. The same bug could also mark normal items "safe to delete".
 
