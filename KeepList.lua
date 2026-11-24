@@ -207,8 +207,19 @@ local function Build()
   searchBox:SetScript("OnEscapePressed", searchBox.ClearFocus)
   searchBox:SetScript("OnEnterPressed", searchBox.ClearFocus)
 
+  -- tiles like a bag, or a list that has room for each item's note and status
+  local function View() return TooltipExtrasDB and TooltipExtrasDB.keepView or "tiles" end
+  local view = UI.Dropdown(body, 110, function()
+    return { { value = "tiles", label = "Tiles" }, { value = "list", label = "List" } }
+  end, View, function(v)
+    TooltipExtrasDB = TooltipExtrasDB or {}
+    TooltipExtrasDB.keepView = v
+    f.Layout()
+  end)
+  view:SetPoint("LEFT", searchBox, "RIGHT", 16, 0)
+
   local bankNote = UI.Text(body, "", "GameFontHighlightSmall")
-  bankNote:SetPoint("LEFT", searchBox, "RIGHT", 14, 0)
+  bankNote:SetPoint("LEFT", view, "RIGHT", 14, 0)
   bankNote:SetPoint("RIGHT", body, "RIGHT", 0, 0)
   bankNote:SetJustifyH("RIGHT")
 
@@ -266,7 +277,23 @@ local function Build()
     t.kept = t:CreateTexture(nil, "OVERLAY")
     t.kept:SetSize(14, 14)
     t.kept:SetPoint("TOPRIGHT", 1, 1)
+    -- "Bank" on items that are only in the bank; not carried at all is greyed
+    t.where = t:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    t.where:SetPoint("TOPLEFT", 2, -2)
+    t.where:SetTextColor(0.8, 0.8, 0.8)
+    t.where:SetFont(t.where:GetFont(), 8, "OUTLINE")
     t.kept:SetTexture("Interface\\Buttons\\UI-CheckBox-Check")
+    -- list view only
+    t.name = t:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    t.name:SetPoint("LEFT", t.icon, "RIGHT", 6, 0)
+    t.name:SetJustifyH("LEFT")
+    t.name:SetWordWrap(false)
+    t.info = t:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    t.info:SetPoint("RIGHT", -6, 0)
+    t.info:SetWidth(330)
+    t.info:SetJustifyH("RIGHT")
+    t.info:SetWordWrap(false)
+    t.name:SetPoint("RIGHT", t.info, "LEFT", -8, 0)
     t:SetHighlightTexture(WHITE)
     t:GetHighlightTexture():SetVertexColor(1, 1, 1, 0.12)
     t:RegisterForClicks("LeftButtonUp")
@@ -305,50 +332,94 @@ local function Build()
     f.count:SetText(n > 0 and (n .. " selected") or "")
   end
 
-  -- sections in order; each item sits in the first that has it
-  local SECTIONS = { { "bags", "Bags" }, { "bank", "Bank" }, { "away", "Kept, not carried" } }
+  -- sections by status, in order: { key, heading, colour }
+  local SECTIONS = {
+    { "kept", "Kept", "33ccff" },
+    { "needed", "Needed for a quest", "33ccff" },
+    { "waiting", "For a quest you haven't picked up", "99bfe6" },
+    { "unused", "No quest uses it", "ff9933" },
+    { "delete", "Safe to delete", "ff4040" },
+    { "other", "Other items", "ffffff" },
+  }
 
   function f.Layout()
     local width = content:GetWidth()
-    local cols = math.max(1, math.floor((width + GAP) / (TILE + GAP)))
+    local list = View() == "list"
+    local cols = list and 1 or math.max(1, math.floor((width + GAP) / (TILE + GAP)))
+    local ROW = 24
     local y, ti, hi = 0, 0, 0
     for _, sec in ipairs(SECTIONS) do
-      local any = false
+      local n = 0
       for _, e in ipairs(data) do
-        if e.where == sec[1] then any = true break end
+        if e.kind == sec[1] then n = n + 1 end
       end
-      if any then
+      if n > 0 then
         hi = hi + 1
         local h = Head(hi)
-        h:SetText(sec[2])
+        h:SetText("|cff" .. sec[3] .. sec[2] .. "|r |cff808080(" .. n .. ")|r")
         h:ClearAllPoints()
         h:SetPoint("TOPLEFT", 0, -y)
         h:Show()
         y = y + 20
         local col = 0
         for _, e in ipairs(data) do
-          if e.where == sec[1] then
+          if e.kind == sec[1] then
             ti = ti + 1
             local t = Tile(ti)
             t.e = e
             t:ClearAllPoints()
-            t:SetPoint("TOPLEFT", col * (TILE + GAP), -y)
+            t.icon:ClearAllPoints()
             t.icon:SetTexture(e.icon or 134400)
             t.icon:SetDesaturated(e.where == "away")
             local total = e.bags + e.bank
-            t.count:SetText(total > 1 and total or "")
             local st = e.status
-            if st then Color(t.status, st[2], st[3], st[4], 1) else Color(t.status, nil) end
             t.kept:SetShown(e.kept)
-            t:Show()
-            col = col + 1
-            if col >= cols then
-              col = 0
-              y = y + TILE + GAP
+            if list then
+              t:SetSize(width, ROW)
+              t:SetPoint("TOPLEFT", 0, -y)
+              t.sel:ClearAllPoints()
+              t.sel:SetAllPoints(t)
+              t.icon:SetPoint("LEFT", 2, 0)
+              t.icon:SetSize(ROW - 4, ROW - 4)
+              local where = {}
+              if e.bags > 0 then where[#where + 1] = e.bags .. " in bags" end
+              if e.bank > 0 then where[#where + 1] = e.bank .. " in bank" end
+              if #where == 0 then where[1] = "not carried" end
+              t.name:SetText((e.link or e.name) .. "  |cff808080" .. table.concat(where, ", ") .. "|r")
+              t.info:SetText(st and st[1] or "")
+              if st then t.info:SetTextColor(st[2], st[3], st[4]) end
+              t.name:Show()
+              t.info:Show()
+              t.count:SetText("")
+              t.where:SetText("")
+              Color(t.status, nil)
+              t.kept:ClearAllPoints()
+              t.kept:SetPoint("CENTER", t.icon, "TOPRIGHT", -2, -2)
+              y = y + ROW + 2
+            else
+              t:SetSize(TILE, TILE)
+              t:SetPoint("TOPLEFT", col * (TILE + GAP), -y)
+              t.sel:ClearAllPoints()
+              t.sel:SetAllPoints(t.icon)
+              t.icon:SetPoint("TOPLEFT", 2, -2)
+              t.icon:SetPoint("BOTTOMRIGHT", -2, 2)
+              t.name:Hide()
+              t.info:Hide()
+              t.count:SetText(total > 1 and total or "")
+              t.where:SetText(e.where == "bank" and "Bank" or "")
+              if st then Color(t.status, st[2], st[3], st[4], 1) else Color(t.status, nil) end
+              t.kept:ClearAllPoints()
+              t.kept:SetPoint("TOPRIGHT", 1, 1)
+              col = col + 1
+              if col >= cols then
+                col = 0
+                y = y + TILE + GAP
+              end
             end
+            t:Show()
           end
         end
-        if col > 0 then y = y + TILE + GAP end
+        if not list and col > 0 then y = y + TILE + GAP end
         y = y + 8
       end
     end
@@ -362,9 +433,8 @@ local function Build()
   -- actions
   f.count = UI.Text(body, "", "GameFontNormalSmall")
   f.count:SetPoint("TOPLEFT", box, "BOTTOMLEFT", 2, -8)
-  local legend = UI.Text(body, "Border: |cff33ccffblue|r kept or needed, |cff99bfe6pale blue|r quest not "
-    .. "picked up, |cffff9933orange|r no quest uses it, |cffff4040red|r safe to delete. "
-    .. "Tick: on your keep list.", "GameFontHighlightSmall")
+  local legend = UI.Text(body, "Tick: on your keep list.  Bank: only in the bank.  Grey: not "
+    .. "carried.", "GameFontHighlightSmall")
   legend:SetPoint("TOPRIGHT", box, "BOTTOMRIGHT", 0, -8)
   legend:SetJustifyH("RIGHT")
 
@@ -440,10 +510,18 @@ local function Build()
       if ok then lines, questLike = l or {}, q end
     end
     local e = {
-      id = id, name = name or ("item " .. id), icon = icon, kept = kept,
+      id = id, name = name or ("item " .. id), link = link, icon = icon, kept = kept,
       bags = b and b.n or 0, bank = k and k.n or 0, status = lines[1],
       where = b and "bags" or k and "bank" or "away",
     }
+    -- section, from the status line's colour (QuestItems.lua's colours)
+    local st = lines[1]
+    if kept then e.kind = "kept"
+    elseif not st then e.kind = "other"
+    elseif st[2] < 0.3 then e.kind = "needed"     -- blue
+    elseif st[2] < 0.7 then e.kind = "waiting"    -- pale blue
+    elseif st[3] < 0.3 then e.kind = "delete"     -- red
+    else e.kind = "unused" end                    -- orange
     local show
     if filter == "kept" then show = kept
     elseif filter == "quest" then

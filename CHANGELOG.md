@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.39.0
+- Items to keep: items are grouped by status instead of bags and bank: **Kept**, **Needed for a quest**, **For a quest you haven't picked up**, **No quest uses it**, **Safe to delete**, **Other items**, each with a count. Tiles only in the bank say "Bank"; items you no longer carry are greyed.
+- Items to keep: **Tiles** or **List** view (next to the search box, remembered). The list shows each item's name, where it is (in bags / in bank) and its status on the right, including your keep note.
+
 ## 0.38.1
 - Items to keep: fixed the empty window. It called the old global GetItemInfo, which Forever doesn't have, so every item failed. It uses C_Item.GetItemInfo now.
 - Items to keep: the keyring is included, where keys like the Mallet of Zul'Farrak sit.
