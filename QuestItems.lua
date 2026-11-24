@@ -274,6 +274,11 @@ MODULE.OnItem = function(tooltip, id, db)
     and (unique or classID == KEY_CLASS))
 
   local lines, open, waiting, listed = {}, false, {}, {}
+  -- on your keep list (KeepList.lua): say so first, and no leftover lines below
+  local keep = ns.KeepNote and ns.KeepNote(id)
+  if keep then
+    lines[1] = { keep ~= "" and ("Keep: " .. keep) or "On your keep list", BLUE[1], BLUE[2], BLUE[3] }
+  end
   local function Needed(q, verb)
     listed[q] = true
     open = true
@@ -307,7 +312,7 @@ MODULE.OnItem = function(tooltip, id, db)
     open = true
   end
 
-  if not open and questLike then
+  if not open and questLike and not keep then
     if #waiting > 0 then
       for k = 1, math.min(#waiting, 3) do
         lines[#lines + 1] = { "Quest item: " .. QuestName(waiting[k]) .. " (not picked up)",

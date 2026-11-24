@@ -1,0 +1,5 @@
+<Bindings>
+  <Binding name="TOOLTIPEXTRAS_KEEP" header="TOOLTIPEXTRAS" category="ADDONS">
+    TooltipExtras_ToggleKeep()
+  </Binding>
+</Bindings>

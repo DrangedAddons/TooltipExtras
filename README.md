@@ -21,6 +21,7 @@ Profit is green, loss is red. It takes off the 5% auction house cut by default (
   - At the ticket vendor (Gelvas Grimegate), items priced in tickets show how many tickets you have and the cheapest quests, from any of the four NPCs, to get the rest.
 
 - **Quest items** (needs Questie): on item tooltips, whether a quest in your log needs it (with your count), whether it starts a quest, or whether it's a quest item left over from finished quests that you can delete. Normal items only get a line while a quest needs them.
+- **Items to keep:** mark items to hang on to (settings button, a key binding on the hovered item, or `/tte keep <item> [note]`). Their tooltip says so, with your note, and Quest items never calls them leftovers.
 - **Green Hills of Stranglethorn:** hover Barnil Stonepot in Booty Bay to see what each chapter costs if you buy the pages you don't have off the auction house, and the total.
 
 - **Cloth reputation:** hover a city's cloth quartermaster (or Belanaa Windveil for the High Order in Dalaran) to see how much Runecloth (and gold) it takes to reach each standing above yours with that faction, using the repeatable Additional Runecloth turn-in.

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.36.0
+- **Items to keep** (new): mark items you want to hang on to, like the Mallet of Zul'Farrak for the gong. A kept item's tooltip shows **On your keep list** (or **Keep: <your note>**) in blue, and Quest items never calls it a leftover.
+  - Settings: **Edit keep list...** opens the list. Shift-click an item into the Item box (or type its ID), add a note if you like, then Add. Right-click a row to remove it.
+  - Key binding: Key Bindings > TooltipExtras > **Keep / unkeep hovered item**. Hover an item and press it.
+  - Chat: **/tte keep** opens the list, **/tte keep <item link or ID> [note]** adds one, **/tte unkeep <item link or ID>** removes one.
+  - The list is account-wide.
+- New files (KeepList.lua, Bindings.xml): restart the game client once (a /reload won't load them).
+
 ## 0.35.0
 - Quest items: keys and other soulbound unique items that can't be equipped (Lamora's Key, Gemstone of Bloodaxe) now get a line too. They can be blue (needed), pale blue (quest not picked up) or orange (no quest in your log uses it / its quests are done), but never red: a key may still open a door.
 - Quest items: your quest log is checked for every item, so an item a quest in your log needs shows **Needed for** even when it isn't a Quest Item, and even before the Questie list has finished building. Objective names must match the item exactly, so Linen Cloth doesn't match Bolt of Linen Cloth.

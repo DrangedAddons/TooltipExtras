@@ -140,7 +140,17 @@ local function Build()
     function() return ns.GeneralDB().ahCut end,
     function(v) ns.GeneralDB().ahCut = v end)
   cut:SetPoint("TOPLEFT", 16, -100)
-  columnTop = -140
+
+  -- the keep list (KeepList.lua) is a list, not a tick box: it gets its own window
+  local keepHead = Heading("Items to keep", "Their tooltip says so, and Quest items never "
+    .. "calls them leftovers.")
+  keepHead:SetPoint("TOPLEFT", COLUMN_X[2], -72)
+  local keep = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
+  keep:SetSize(150, 22)
+  keep:SetText("Edit keep list...")
+  keep:SetPoint("TOPLEFT", keepHead.note, "BOTTOMLEFT", 0, -6)
+  keep:SetScript("OnClick", function() if ns.OpenKeepList then ns.OpenKeepList() end end)
+  columnTop = -170
 
   for _, cat in ipairs(CATEGORIES) do
     local list = {}
