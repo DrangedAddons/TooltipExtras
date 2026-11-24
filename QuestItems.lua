@@ -14,6 +14,9 @@
 --
 -- Colours: bright blue = a quest needs it (in your log, or it starts one), pale blue = for a
 -- quest you haven't picked up, red = safe to delete. Needed stays blue past the count (13/10).
+-- Orange = a quest item Questie doesn't know and no quest in your log uses: likely a leftover.
+-- The quest log is also checked directly (objective text, the quest's usable item), so Forever's
+-- own quests that Questie lacks still show "Needed for" / "Used for".
 -- Gold, white, green and the item-quality blue are all taken by normal tooltip text.
 local ADDON, ns = ...
 
@@ -190,31 +193,90 @@ local function Place(tooltip, text)
   end
 end
 
+-- Quests in the log: { id, index } each
+local function LogQuests()
+  local out = {}
+  if C_QuestLog and C_QuestLog.GetNumQuestLogEntries and C_QuestLog.GetInfo then
+    for i = 1, C_QuestLog.GetNumQuestLogEntries() do
+      local info = C_QuestLog.GetInfo(i)
+      if info and not info.isHeader and info.questID and info.questID > 0 then
+        out[#out + 1] = { id = info.questID, index = i }
+      end
+    end
+  elseif GetNumQuestLogEntries and GetQuestLogTitle then
+    for i = 1, GetNumQuestLogEntries() do
+      local _, _, _, isHeader, _, _, _, q = GetQuestLogTitle(i)
+      if not isHeader and q and q > 0 then out[#out + 1] = { id = q, index = i } end
+    end
+  end
+  return out
+end
+
+-- the item a quest gives you to use (the button on the quest log / tracker)
+local function SpecialItem(logIndex)
+  if not GetQuestLogSpecialItemInfo then return nil end
+  local ok, link = pcall(GetQuestLogSpecialItemInfo, logIndex)
+  return ok and type(link) == "string" and tonumber(link:match("item:(%d+)")) or nil
+end
+
+-- whether the tooltip shows the "Quest Item" line
+local function HasQuestLine(tooltip)
+  local name = tooltip.GetName and tooltip:GetName()
+  if not name then return false end
+  local label = ITEM_BIND_QUEST or "Quest Item"
+  for i = 2, math.min(tooltip:NumLines() or 0, 5) do
+    local fs = _G[name .. "TextLeft" .. i]
+    if fs and fs:GetText() == label then return true end
+  end
+  return false
+end
+
+local BLUE = { 0.2, 0.8, 1 }
+
 MODULE.OnItem = function(tooltip, id, db)
-  if db.show == false or not index then return false end
-  local quests = index[id]
+  if db.show == false then return false end
+  local quests = index and index[id]
   -- Questie stores 0, not nil, for items that start nothing
   local starts = ItemField(id, "startQuest")
   if type(starts) ~= "number" or starts <= 0 then starts = nil end
-  if not quests and not starts then return false end
   local classID = select(6, C_Item and C_Item.GetItemInfoInstant and C_Item.GetItemInfoInstant(id)
     or GetItemInfoInstant(id))
-  local questOnly = classID == QUEST_CLASS or starts ~= nil
+  local questOnly = classID == QUEST_CLASS or starts ~= nil or HasQuestLine(tooltip)
+  if not quests and not starts and not questOnly then return false end
 
-  local lines, open, waiting = {}, false, {}
+  local lines, open, waiting, listed = {}, false, {}, {}
+  local function Needed(q, verb)
+    listed[q] = true
+    open = true
+    -- blue even with more than enough: better to keep extras than invite a deleted stack
+    local p = Progress(q, id)
+    lines[#lines + 1] = { verb .. QuestName(q) .. (p and (" (" .. p .. ")") or ""), BLUE[1], BLUE[2], BLUE[3] }
+  end
   for _, q in ipairs(quests and Sorted(quests) or {}) do
     if OnQuest(q) then
-      open = true
-      -- blue even with more than enough: better to keep extras than invite a deleted stack
-      local p = Progress(q, id)
-      lines[#lines + 1] = { "Needed for " .. QuestName(q) .. (p and (" (" .. p .. ")") or ""), 0.2, 0.8, 1 }
+      Needed(q, "Needed for ")
     elseif not Done(q) and ForMe(q) then
       waiting[#waiting + 1] = q
     end
   end
 
+  -- The quest log itself, for what Questie doesn't know (Forever's own quests): an objective
+  -- naming the item, or the item the quest gives you to use.
+  if questOnly or not open then
+    local name = ns.ItemName(id)
+    for _, e in ipairs(LogQuests()) do
+      if not listed[e.id] then
+        if SpecialItem(e.index) == id then
+          Needed(e.id, "Used for ")
+        elseif name and Progress(e.id, id) then
+          Needed(e.id, "Needed for ")
+        end
+      end
+    end
+  end
+
   if starts and not Done(starts) and not OnQuest(starts) and ForMe(starts) then
-    lines[#lines + 1] = { "Starts a quest: " .. QuestName(starts), 0.2, 0.8, 1 }
+    lines[#lines + 1] = { "Starts a quest: " .. QuestName(starts), BLUE[1], BLUE[2], BLUE[3] }
     open = true
   end
 
@@ -224,8 +286,12 @@ MODULE.OnItem = function(tooltip, id, db)
         lines[#lines + 1] = { "Quest item: " .. QuestName(waiting[k]) .. " (not picked up)",
           0.6, 0.75, 0.9 }
       end
-    else
+    elseif quests or starts then
       lines[#lines + 1] = { "Quest leftover: safe to delete", 1, 0.25, 0.25 }
+    else
+      -- Questie has no quest for it, so "done" can't be known: say what we can see
+      lines[#lines + 1] = { "No quest in your log uses this", 1, 0.6, 0.2 }
+      lines[#lines + 1] = { "Not in Questie's data: probably a leftover, not certain", 0.6, 0.6, 0.6 }
     end
   end
 

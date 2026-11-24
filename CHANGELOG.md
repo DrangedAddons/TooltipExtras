@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.34.0
+- Quest items: every item with a "Quest Item" line now gets a line, even ones Questie doesn't know (Forever's own quests).
+  - Your quest log is checked directly too: an objective naming the item shows **Needed for <quest>**, and the item a quest gives you to use shows **Used for <quest>** (blue).
+  - A quest item Questie doesn't know and no quest in your log uses shows **No quest in your log uses this** in orange, with a grey note that it's probably a leftover but not certain. Red "safe to delete" stays for items Questie can confirm.
+
 ## 0.33.4
 - Quest items: a quest in your log keeps the line blue even when you have more than it needs, and the count shows what's in your bags (13/10). No more grey "you have enough": better to keep extras than delete a stack by mistake.
 
