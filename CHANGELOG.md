@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.38.1
+- Items to keep: fixed the empty window. It called the old global GetItemInfo, which Forever doesn't have, so every item failed. It uses C_Item.GetItemInfo now.
+- Items to keep: the keyring is included, where keys like the Mallet of Zul'Farrak sit.
+- Items to keep: when nothing shows, it says how many kinds of item it found in your bags and bank.
+
 ## 0.38.0
 - Items to keep: the window shows your items as tiles, like a bag, under **Bags**, **Bank** and **Kept, not carried** (greyed). Each tile's border is its status colour (blue kept or needed, pale blue quest not picked up, orange no quest uses it, red safe to delete), and a tick marks items on your keep list. Hover a tile for its tooltip, click to select, Shift-click for a range.
 - Items to keep: opening it from the /dranged window or Options closes that window, so the two don't overlap.

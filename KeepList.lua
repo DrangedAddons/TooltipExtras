@@ -20,6 +20,9 @@ function ns.KeepNote(id)
   return id and DB()[id]
 end
 
+-- Forever has C_Item.GetItemInfo; the old global may be gone
+local GetInfo = C_Item and C_Item.GetItemInfo or GetItemInfo
+
 local function Say(msg) print("|cff33ff99TooltipExtras|r " .. msg) end
 
 local function IDOf(text)
@@ -28,7 +31,7 @@ local function IDOf(text)
 end
 
 local function Label(id)
-  local name, link = GetItemInfo(id)
+  local name, link = GetInfo(id)
   return link or name or ("item " .. id)
 end
 
@@ -105,6 +108,9 @@ local function LastBag() return NUM_TOTAL_EQUIPPED_BAG_SLOTS or NUM_BAG_SLOTS or
 local function BagIDs()
   local t = {}
   for b = 0, LastBag() do t[#t + 1] = b end
+  -- the keyring, where keys like Lamora's Key and the Mallet of Zul'Farrak live
+  local keyring = (Enum and Enum.BagIndex and Enum.BagIndex.Keyring) or KEYRING_CONTAINER
+  if keyring then t[#t + 1] = keyring end
   return t
 end
 
@@ -218,6 +224,7 @@ local function Build()
   local scroll, content = UI.ScrollArea(inner, 720)
   local empty = UI.Text(box, "Nothing here.", "GameFontDisable")
   empty:SetPoint("TOP", 0, -30)
+  f.empty = empty
 
   local tiles, heads = {}, {}
   local ar, ag, ab = ns.AccentColor()
@@ -421,7 +428,7 @@ local function Build()
 
   local function Entry(id, bags, bank)
     local info = C_Item and C_Item.GetItemInfoInstant or GetItemInfoInstant
-    local name, link, _, _, _, _, _, stack, _, _, _, _, _, bindType = GetItemInfo(id)
+    local name, link, _, _, _, _, _, stack, _, _, _, _, _, bindType = GetInfo(id)
     local _, _, _, equipLoc, icon, classID = info(id)
     local b, k = bags[id], bank[id]
     local bound = (b and b.bound) or (k and k.bound) or bindType == 1 or bindType == 4
@@ -472,6 +479,11 @@ local function Build()
     for _, e in ipairs(data) do visible[e.id] = true end
     for id in pairs(selected) do if not visible[id] then selected[id] = nil end end
     f.Layout()
+    local nb, nk = 0, 0
+    for _ in pairs(bags) do nb = nb + 1 end
+    for _ in pairs(bank) do nk = nk + 1 end
+    f.empty:SetText(filter == "all" and "Nothing here." or ("Nothing here (" .. nb .. " kinds of item in "
+      .. "your bags, " .. nk .. " in the bank). Try Everything."))
   end
   function f.Update()
     local ok, err = pcall(Update)
@@ -481,6 +493,7 @@ local function Build()
     end
   end
   f:HookScript("OnShow", function()
+    warned = nil
     wipe(selected)
     last = nil
     f.Update()
