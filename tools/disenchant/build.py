@@ -32,10 +32,13 @@ MIN_CHANCE, MIN_QTY_SHARE = 0.4, 2.0
 # so a cut-off material reads low or missing. Lists this short may be cut off.
 SHORT_LIST = 215
 
-# Known traps, from the 2026-11-14 check (no rows changed then):
+# Known traps, from the 2026-11-14 and 2026-11-26 checks (no rows changed either time):
 # - Blues that give dust or essences: a few items Wowhead lists as blue disenchant like greens.
 #   Every blue group shows some; the original game's blues give only shards (plus rare Nexus).
 # - Green 51-65 with few or no Large/Small Brilliant Shards: those shard lists are cut off.
+#   On 2026-11-26 Wowhead listed up to 400 items a page, and the Large Brilliant Shard page (362)
+#   was mostly blues: green 56-65 items missing from it add up to only 96-97% of their
+#   disenchants, the missing 3-4% being the shard. So SHORT_LIST no longer catches it.
 # - Groups at 16-20 picking up the 5-15 results: edge items; small samples.
 # "kind quality low-high": reason the table keeps its row
 KEEP = {
@@ -50,6 +53,11 @@ KEEP = {
     "weapon 2 16-20": "edge items with 5-15 results; small sample",
     "armor 2 21-25": "edge items with 16-20 dust counts (2-3 Strange Dust, under 10%)",
     "weapon 2 21-25": "edge items with 16-20 dust counts (2-3 Strange Dust, under 10%)",
+    "weapon 2 26-30": "small sample (14 items, 387 disenchants on 2026-11-26)",
+    "armor 2 56-60": "Large Brilliant Shard list leaves out most greens",
+    "armor 2 61-65": "Large Brilliant Shard list leaves out most greens",
+    "weapon 2 56-60": "Large Brilliant Shard list leaves out most greens",
+    "weapon 2 61-65": "Large Brilliant Shard list leaves out most greens",
 }
 
 
