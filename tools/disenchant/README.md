@@ -52,6 +52,11 @@ rewrite only the rows that are real changes:
 python build.py --write "armor 2 26-30" "weapon 3 41-45"
 ```
 
+The Nexus Crystal chance on the two blue 56-99 rows is set by hand: it is too small for the row
+compare to see. `build.py` prints the stored count on its last line (Nexus Crystals against Large
+Brilliant Shards) next to the table's value; change the two rows in `Disenchant.lua` yourself if
+they drift apart. `--write` on those rows keeps the table's value.
+
 ## 4. Ship it
 
 Syntax-check `Disenchant.lua`, bump the version, add a CHANGELOG line saying which rows changed,

@@ -8,6 +8,11 @@
 -- table, so that table is used here (from Auctionator's Classic data). Forever has no Burning
 -- Crusade materials: blues above level 65 still give Large Brilliant Shards and purples above 60
 -- give 1-2 Nexus Crystals, as Wowhead Forever shows.
+--
+-- One number is not the original table's: a Nexus Crystal from a blue of item level 56+. That
+-- table says 0.5%. Wowhead Forever's Nexus Crystal and Large Brilliant Shard pages on 2026-11-27
+-- gave 100 crystals in 79,857 disenchants of 307 such blues (0.10-0.14% depending on which
+-- items are counted), so the rows use 0.13%. tools/disenchant/build.py prints the current count.
 local ADDON, ns = ...
 
 -- DE[kind][quality] = { { lowLevel, highLevel, { itemID, chance %, minQty, maxQty, avgQty }, ... } }
@@ -36,7 +41,7 @@ local DE = {
       { 41, 45, { 11177, 100, 1, 1, 1 } },
       { 46, 50, { 11178, 100, 1, 1, 1 } },
       { 51, 55, { 14343, 100, 1, 1, 1 } },
-      { 56, 99, { 14344, 99.5, 1, 1, 1 }, { 20725, 0.5, 1, 1, 1 } },
+      { 56, 99, { 14344, 99.87, 1, 1, 1 }, { 20725, 0.13, 1, 1, 1 } },
     },
     [4] = {
       { 40, 45, { 11177, 100, 2, 4, 3 } },
@@ -68,7 +73,7 @@ local DE = {
       { 41, 45, { 11177, 100, 1, 1, 1 } },
       { 46, 50, { 11178, 100, 1, 1, 1 } },
       { 51, 55, { 14343, 100, 1, 1, 1 } },
-      { 56, 99, { 14344, 99.5, 1, 1, 1 }, { 20725, 0.5, 1, 1, 1 } },
+      { 56, 99, { 14344, 99.87, 1, 1, 1 }, { 20725, 0.13, 1, 1, 1 } },
     },
     [4] = {
       { 40, 45, { 11177, 100, 2, 4, 3 } },
@@ -117,6 +122,7 @@ end
 
 local function Chance(pct)
   if pct >= 10 or pct == math.floor(pct) then return string.format("%d%%", math.floor(pct + 0.5)) end
+  if pct < 1 then return string.format("%.2f%%", pct) end -- 0.13%, not 0.1%
   return (string.format("%.1f", pct):gsub("%.0$", "")) .. "%"
 end
 

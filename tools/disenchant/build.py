@@ -40,6 +40,10 @@ SHORT_LIST = 215
 #   was mostly blues: green 56-65 items missing from it add up to only 96-97% of their
 #   disenchants, the missing 3-4% being the shard. So SHORT_LIST no longer catches it.
 # - Groups at 16-20 picking up the 5-15 results: edge items; small samples.
+# - Blue 56+ Nexus Crystal: set by hand to 0.13% on 2026-11-27 (the original table's 0.5% was
+#   four times what Wowhead Forever shows). It is far under MIN_CHANCE, so from_counts never
+#   reports it; main() prints the count on its own line, and --write carries the table's
+#   value over instead of dropping it.
 # "kind quality low-high": reason the table keeps its row
 KEEP = {
     "armor 3 11-25": "Wowhead blues that disenchant like greens",
@@ -184,6 +188,14 @@ def main():
         if name in targets:
             if why:
                 print("    rewriting anyway, as asked")
+            # Hand-set rare materials (the blue rows' Nexus Crystal) are below what the counts
+            # can show: keep them, and take their share off the most common material.
+            have = {m[0] for m in new}
+            rare = [m for m in r["mats"] if m[1] < MIN_CHANCE and m[0] not in have]
+            if rare and new:
+                new[0][1] = round(new[0][1] - sum(m[1] for m in rare), 2)
+                new = new + rare
+                print("    kept by hand: " + show(rare))
             r["mats"] = new
             lines[r["index"]] = row_line(r)
             changed += 1
@@ -193,6 +205,19 @@ def main():
                 if (kind, q, key) not in seen:
                     print("%s %s %s: Forever has %d items (%d disenchants) the table has no row for"
                           % (kind, q, key, g["n"], g["de"]))
+    # The blue 56+ Nexus Crystal chance is too small for the rows above to check.
+    nexus = shard = 0
+    for kind in ("armor", "weapon"):
+        g = groups.get(kind, {}).get("3", {}).get("56-99")
+        if g:
+            nexus += g["mats"].get("20725", [0])[0]
+            shard += g["mats"].get("14344", [0])[0]
+    table = sorted({m[1] for r in rows if r["quality"] == 3 for m in r["mats"] if m[0] == 20725})
+    if nexus and shard:
+        print()
+        print("Blue 56+ Nexus Crystal: %d against %d Large Brilliant Shards, %.2f%% (1 in %d). Table: %s%%"
+              % (nexus, shard, 100.0 * nexus / (nexus + shard), round((nexus + shard) / nexus),
+                 ", ".join(num(t) for t in table) or "none"))
     if changed:
         LUA.write_text(text[:start] + "\n".join(lines) + "\n" + text[end:], encoding="utf-8", newline="")
         print("\nRewrote %d rows in %s" % (changed, LUA.name))

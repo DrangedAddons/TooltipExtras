@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.39.1
+- Disenchant: a blue of item level 56 or more now shows a **0.13%** Nexus Crystal chance instead of 0.5%. Wowhead Forever's counts (about 100 crystals in 80,000 disenchants) put it near 1 in 770; the original game's table said 1 in 200. The expected value on those blues drops to match. Rows changed: armor 3 56-99, weapon 3 56-99.
+- Disenchant: chances under 1% show two decimals.
+
 ## 0.39.0
 - Items to keep: items are grouped by status instead of bags and bank: **Kept**, **Needed for a quest**, **For a quest you haven't picked up**, **No quest uses it**, **Safe to delete**, **Other items**, each with a count. Tiles only in the bank say "Bank"; items you no longer carry are greyed.
 - Items to keep: **Tiles** or **List** view (next to the search box, remembered). The list shows each item's name, where it is (in bags / in bank) and its status on the right, including your keep note.
