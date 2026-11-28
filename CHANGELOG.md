@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.40.0
+- **Argent Dawn scourgestones** (new, under Reputation): hover Duke Nicholas Zverenhoff at Light's Hope Chapel for how many scourgestones it takes to reach each Argent Dawn standing above yours. Up to Honored: the turn-ins needed and what that is in Minion's (20 each), Invader's (10 each) or Corruptor's (1 each) Scourgestones. Past Honored: Corruptor's only, since Minion's and Invader's stop giving rep there. Plus how far the stones in your bags get you. 25 rep a turn-in, +10% for Humans. Stones are soulbound, so it counts stones, not gold.
+- New file: restart the game client once (a /reload won't load it).
+
 ## 0.39.1
 - Disenchant: a blue of item level 56 or more now shows a **0.13%** Nexus Crystal chance instead of 0.5%. Wowhead Forever's counts (about 100 crystals in 80,000 disenchants) put it near 1 in 770; the original game's table said 1 in 200. The expected value on those blues drops to match. Rows changed: armor 3 56-99, weapon 3 56-99.
 - Disenchant: chances under 1% show two decimals.

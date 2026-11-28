@@ -26,6 +26,7 @@ Profit is green, loss is red. It takes off the 5% auction house cut by default (
 
 - **Cloth reputation:** hover a city's cloth quartermaster (or Belanaa Windveil for the High Order in Dalaran) to see how much Runecloth (and gold) it takes to reach each standing above yours with that faction, using the repeatable Additional Runecloth turn-in.
 - **Thorium Brotherhood:** hover Master Smith Burninate for the hand-ins to each standing above yours and their auction cost: the Fiery Flux supply turn-ins to Friendly (cheapest way in green), then Dark Iron Residue.
+- **Argent Dawn scourgestones:** hover Duke Nicholas Zverenhoff at Light's Hope Chapel for the Minion's, Invader's or Corruptor's Scourgestones to each standing (only Corruptor's past Honored), and how far yours get you.
 
 - **Mage scrolls:** untranslated Comprehension scrolls list what they can decipher into (random within the scroll's tier).
 

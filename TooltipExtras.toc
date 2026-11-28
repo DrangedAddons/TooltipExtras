@@ -1,8 +1,8 @@
 ## Interface: 16001
 ## Title: TooltipExtras
-## Notes: Profit lines on item tooltips, per profession: essence combine/split and disenchant value (Enchanting), ore to bar (Mining), cloth to bolt (Tailoring), leather upgrades and cured hides (Leatherworking), stone to blasting powder (Engineering), stone to grinding stone (Blacksmithing); best zones and schools for raw fish (Fishing); Darkmoon Faire ticket hand-ins ranked by cost; Green Hills of Stranglethorn page costs; Runecloth to each rep standing at cloth quartermasters; Thorium Brotherhood hand-ins at Master Smith Burninate; what mage Comprehension scrolls decipher into; whether a quest still needs an item or it's a leftover you can delete (Questie); priced reagent lists on recipe links for every profession; chat link tooltips on hover; Alt+click bag items to total their worth. Prices from Auctionator.
+## Notes: Profit lines on item tooltips, per profession: essence combine/split and disenchant value (Enchanting), ore to bar (Mining), cloth to bolt (Tailoring), leather upgrades and cured hides (Leatherworking), stone to blasting powder (Engineering), stone to grinding stone (Blacksmithing); best zones and schools for raw fish (Fishing); Darkmoon Faire ticket hand-ins ranked by cost; Green Hills of Stranglethorn page costs; Runecloth to each rep standing at cloth quartermasters; Thorium Brotherhood hand-ins at Master Smith Burninate; Argent Dawn scourgestones at Duke Nicholas Zverenhoff; what mage Comprehension scrolls decipher into; whether a quest still needs an item or it's a leftover you can delete (Questie); priced reagent lists on recipe links for every profession; chat link tooltips on hover; Alt+click bag items to total their worth. Prices from Auctionator.
 ## Author: Dranged
-## Version: 0.39.1
+## Version: 0.40.0
 ## X-DrangedAddons-Games: _forever_
 ## X-DrangedHub-Page: TooltipExtras
 ## X-DrangedHub-Open: /tooltipextras
@@ -22,6 +22,7 @@ Blacksmithing.lua
 ChatHover.lua
 ClothRep.lua
 ThoriumRep.lua
+ArgentDawn.lua
 Darkmoon.lua
 Disenchant.lua
 NeutralPrices.lua
